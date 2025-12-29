@@ -21,7 +21,7 @@ app.listen(port, () =>
 app.get('/', (req, res) =>
 {
     res.sendStatus(402);
-    res.send("Nothing Here.")
+    res.send("<script>window.location = "../landing_page.html"</script>);
 });
 
 /* API endpoint to grab TimeTable form. */
