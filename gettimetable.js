@@ -1,3 +1,5 @@
+// Complete Working University TimeTable Scraper
+
 require('dotenv').config();
 
 const user = process.env.USEDR_UNI_ID || '';
