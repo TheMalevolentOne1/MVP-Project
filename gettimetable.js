@@ -25,23 +25,6 @@ async function fetchTimetable() {
     const getText = await getRes.text();
     console.log('GET Response:', getText); // Log full response
     
-    // POST request with JSON body (if needed)
-    const body = { key: 'value' };
-    console.log('\nSending POST request...');
-    const postRes = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Basic ${token}`,
-        'User-Agent': userAgent,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-    
-    console.log('POST Status:', postRes.status);
-    const postText = await postRes.text();
-    console.log('POST Response:', postText.substring(0, 500)); // Log first 500 chars
-    
   } catch (error) {
     console.error('Error fetching timetable:', error.message);
   }
