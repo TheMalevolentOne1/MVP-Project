@@ -1,5 +1,10 @@
+const CryptoJS = require('crypto-js');
+const crypto = require('crypto');
+const mysql2 = require("mysql2/promise");
+require("dotenv").config();
+
 // Registration handler with AES encryption using crypto-js
-const SECRET_KEY = 'asc-study-planner-2025'; // Change this in production
+// Each user's password is encrypted with their UUID as the secret key
 
 document.getElementById('registerForm').addEventListener('submit', function(e) {
     e.preventDefault();
@@ -28,13 +33,17 @@ document.getElementById('registerForm').addEventListener('submit', function(e) {
         return;
     }
     
-    // Encrypt the password using AES
-    const encryptedPassword = CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
+    // Generate UUID for new user
+    const userId = crypto.randomUUID();
+    
+    // Encrypt the password using user's UUID as the secret key
+    const encryptedPassword = CryptoJS.AES.encrypt(password, userId).toString();
     
     // Store new user
-    users[email] = encryptedPassword;
+    users[email] = { password: encryptedPassword, id: userId };
     localStorage.setItem('users', JSON.stringify(users));
     localStorage.setItem('currentUser', email);
+    localStorage.setItem('currentUserId', userId);
     
     alert('Account created successfully!');
     // Redirect to dashboard

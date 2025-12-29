@@ -1,8 +1,7 @@
 const CryptoJS = require('crypto-js');
-const SQLITE = require('sqlite3').verbose();
+require("dotenv").config();
+const crypto = require('crypto');
 
-// Simple authentication handler with AES encryption using crypto-js
-const SECRET_KEY = 'asc-study-planner-2025'; // Change this in production
 
 document.getElementById('loginForm').addEventListener('submit', function(e) {
     e.preventDefault(); // Prevents page refresh
@@ -10,22 +9,21 @@ document.getElementById('loginForm').addEventListener('submit', function(e) {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
     
-    // Encrypt the password using AES
-    const encryptedPassword = CryptoJS.AES.encrypt(password, SECRET_KEY).toString();
-    
     // Store credentials in localStorage (for MVP - use backend in production)
     const users = JSON.parse(localStorage.getItem('users') || '{}');
     
     if (users[email]) {
-        // Login: verify password
-        const storedPassword = users[email];
-        const decryptedPassword = CryptoJS.AES.decrypt(storedPassword, SECRET_KEY).toString(CryptoJS.enc.Utf8);
+        // Login: verify password using user's UUID as secret key
+        const userUUID = users[email].id;
+        const storedPassword = users[email].password;
+        const decryptedPassword = CryptoJS.AES.decrypt(storedPassword, userUUID).toString(CryptoJS.enc.Utf8);
         
         if (decryptedPassword === password) {
             alert('Login successful!');
             localStorage.setItem('currentUser', email);
-            // Redirect to dashboard or main app
-            window.location.href = '../dashboard.html';
+            localStorage.setItem('currentUserId', userUUID);
+            // Redirect to protected dashboard route
+            window.location.href = '/dashboard';
         } else {
             alert('Invalid email or password');
         }

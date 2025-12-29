@@ -1,4 +1,5 @@
-# -----------------------
+# Ignore temporary and local notes
+junk/# -----------------------
 # Operating systems
 # -----------------------
 # Windows
@@ -157,3 +158,4 @@ coverage/
 coverage-final.json
 *.sqlite
 *.db
+junk/*

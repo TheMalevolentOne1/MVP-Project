@@ -4,6 +4,9 @@ const TIMETABLE_URL = 'https://apps.uclan.ac.uk/TimeTables/';
 const express = require('express');
 
 const axios = require('axios');
+const CryptoJS = require('crypto-js');
+const mysql = require('mysql2/promise');
+const path = require('path');
 const app = express();
 const port = 3000;
 
