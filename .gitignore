@@ -1,0 +1,159 @@
+# -----------------------
+# Operating systems
+# -----------------------
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Linux
+*~ 
+.nfs*
+
+# -----------------------
+# IDEs and editors
+# -----------------------
+# VS Code
+.vscode/
+.history/
+*.code-workspace
+
+# JetBrains
+.idea/
+*.iml
+out/
+
+# Sublime
+*.sublime-workspace
+*.sublime-project
+
+# -----------------------
+# Node
+# -----------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.pnp.*
+/dist
+/build
+/.next
+/.nuxt
+/.cache
+/.parcel-cache
+
+# -----------------------
+# Python
+# -----------------------
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+env/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.pytest_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.eggs/
+
+# -----------------------
+# Java / Maven / Gradle
+# -----------------------
+/target/
+*.class
+*.jar
+*.war
+*.ear
+*.iml
+/.gradle/
+/build/
+
+# -----------------------
+# .NET
+# -----------------------
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# -----------------------
+# Go
+# -----------------------
+/bin/
+/pkg/
+*.exe
+*.test
+
+# -----------------------
+# Rust
+# -----------------------
+/target/
+**/*.rs.bk
+
+# -----------------------
+# Docker
+# -----------------------
+**/docker-compose.override.yml
+docker-compose.override.yml
+docker-compose.*.yml
+**/Dockerfile.*
+*.dockerignore
+
+# -----------------------
+# CI / Secrets / Keys
+# -----------------------
+.env
+.env.*.local
+.env.local
+.env.production
+.env.test
+secrets.yml
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+
+# -----------------------
+# Logs and runtime files
+# -----------------------
+logs/
+*.log
+*.pid
+*.seed
+*.pid.lock
+tmp/
+temp/
+*.tmp
+
+# -----------------------
+# Archives and packages
+# -----------------------
+*.zip
+*.tar.gz
+*.rar
+*.7z
+
+# -----------------------
+# Misc
+# -----------------------
+.vagrant/
+coverage/
+coverage-final.json
+*.sqlite
+*.db
