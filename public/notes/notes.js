@@ -107,6 +107,39 @@ function selectNote(noteElement) {
 }
 
 // Delete the currently selected note
+
+async function UpdateNote()
+{
+    if (!currentNoteTitle) {
+        alert('No note selected. Click on a note first.');
+        return;
+    }   
+
+    const content = document.getElementById('noteContent').value.trim();
+
+    try {
+
+        const response = await fetch('/user/notes', 
+        {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ oldTitle: currentNoteTitle, newTitle: currentNoteTitle, content })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+
+            // Refresh notes list
+            await populateNotesList();
+
+        } else {
+            alert('Failed to update note: ' + (data.error || 'Unknown error'));
+        }
+    } catch (error) {
+        console.error('Error updating note:', error);
+        alert('Error updating note');
+    }
+}
  
 async function DeleteNote() {
     if (!currentNoteTitle) {
@@ -207,6 +240,20 @@ async function handleLogout() {
     }
 }
 
+async function editNoteContent(oldTitle, newTitle, content) {
+    try {
+        const response = await fetch(`/user/notes/${encodeURIComponent(oldTitle)}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ newTitle, content })
+        });
+        const data = await response.json();
+        return data;
+    } catch (err) {
+        return { success: false, error: err.message };
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const userData = await loadUsername();
     
@@ -243,9 +290,7 @@ window.addEventListener('keydown', function(e)
     {
         e.preventDefault();
 
-        if (typeof CreateNote === 'function') 
-        {
-            CreateNote();
-        }
+        if (databaseHandlier.doesNoteExist(currentNoteTitle)) { if (confirm("Do you want to save changes to the current note?")) editNoteContent(currentNoteTitle, document.getElementById('noteTitle').value, document.getElementById('noteContent').value); }
+        else if (confirm('Create new note?')) { CreateNote(); }
     }
 });

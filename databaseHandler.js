@@ -115,4 +115,16 @@ async function GetNoteByTitle(uuid, title) {
     }
 }
 
-module.exports = { verifyUserEmail, addNewUser, getUserEmailById, CreateNote, EditNoteContent, DeleteNote, getUserNotes: GetUserNotes, getNoteByTitle: GetNoteByTitle };
+async function doesNoteExist(uuid, title) {
+    try {
+        const [rows] = await pool.query(
+            'SELECT 1 FROM notes WHERE uuid = ? AND title = ? LIMIT 1',
+            [uuid, title]
+        );
+        return rows.length > 0;
+    } catch (err) {
+        return false;
+    }
+}
+
+module.exports = { verifyUserEmail, addNewUser, getUserEmailById, CreateNote, EditNoteContent, DeleteNote, getUserNotes: GetUserNotes, getNoteByTitle: GetNoteByTitle, doesNoteExist };
