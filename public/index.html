@@ -6,15 +6,19 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="styles.css" />
     </head>
-    <body>
-        <div class="navBar">
-            <img src="logo.png" alt="ASC Logo" onclick="window.location = 'index.html'"/>
-            <div class="navLinks">
-            <a href="./login_page.html" style="nav-right: auto;">Login</a>
-        </div>
-        <h1>Welcome to Adaptive Study Cipher</h1>
-        <h2>Your Student Study Planner!</h2>
-        <img src="https://loremipsum.imgix.net/GTlzd4xkx4LmWsG1Kw1BB/ad1834111245e6ee1da4372f1eb5876c/placeholder.com-1280x720.png?w=1920&q=60&auto=format,compress" alt="ASC Landing Image" />
-        <button onclick="window.location.href='./registration_page.html'">Get Started with ASC Today!</button>
+    <body class="landing-page">
+        <header class="notes-header">
+            <button class="logo-btn" onclick="window.location = 'index.html'">Logo</button>
+            <h1 class="notes-title">Adaptive Study Cipher</h1>
+            <button class="logo-btn" onclick="window.location.href='./login_page.html'">Login!</button>
+        </header>
+        <main class="landing-main">
+            <h2 class="landing-subtitle">Your Student Study Planner</h2>
+            <img src="https://loremipsum.imgix.net/GTlzd4xkx4LmWsG1Kw1BB/ad1834111245e6ee1da4372f1eb5876c/placeholder.com-1280x720.png?w=1920&q=60&auto=format,compress" alt="ASC Landing Image" class="landing-img" />
+            <button class="landing-btn" onclick="window.location.href='./registration_page.html'">Get Started with ASC Today!</button>
+            <div class="landing-links">
+                <a href="./login_page.html">Login</a>
+            </div>
+        </main>
     </body>
 </html>

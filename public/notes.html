@@ -5,6 +5,7 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.jsdelivr.net/npm/commonmark@0.31.0/dist/commonmark.min.js"></script>
     </head>
     <body class="notes-page">
         <!-- Header Bar -->
@@ -24,6 +25,7 @@
                         <input type="text" class="notes-search" placeholder="Search" />
                         <button class="action-btn add-btn">+</button>
                         <button class="action-btn delete-btn">-</button>
+                        <button class="action-btn clear-btn">C</button>
                     </div>
                     <div class="notes-list" id="notesList">
                         <!-- Notes will be dynamically populated here by notes.js -->
@@ -41,7 +43,7 @@
                 <!-- Mode Toggle -->
                 <div class="mode-toggle">
                     <button class="mode-btn active" id="previewBtn">Preview</button>
-                    <button class="mode-btn" id="liveBtn">Live</button>
+                    <button class="mode-btn" id="editBtn">Edit</button>
                 </div>
 
                 <!-- Notes Title -->

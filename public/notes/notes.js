@@ -1,14 +1,38 @@
-/**
- * notes.js - Notes Page Functionality
- * See NOTES-IMPLEMENTATION.md for detailed implementation guide.
- */
-
 // Track the currently selected note
 let currentNoteTitle = null;
 
-/**
- * Fetches the current user's info and updates the username display
- */
+// CommonMark parser and renderer
+const reader = new commonmark.Parser();
+const writer = new commonmark.HtmlRenderer({ safe: true });
+
+// Render markdown content to HTML
+function renderMarkdown(markdown) {
+    const parsed = reader.parse(markdown);
+    return writer.render(parsed);
+}
+
+// Toggle between Preview and Live (edit) mode
+function setPreviewMode(isPreview) {
+    const textarea = document.getElementById('noteContent');
+    const preview = document.getElementById('notePreview');
+    const previewBtn = document.getElementById('previewBtn');
+    const editBtn = document.getElementById('editBtn');
+    if (isPreview) {
+        preview.innerHTML = renderMarkdown(textarea.value);
+        textarea.style.display = 'none';
+        preview.style.display = 'block';
+        previewBtn.classList.add('active');
+        editBtn.classList.remove('active');
+    } else {
+        textarea.style.display = 'block';
+        preview.style.display = 'none';
+        editBtn.classList.add('active');
+        previewBtn.classList.remove('active');
+    }
+}
+
+// Fetches the current user's info and updates the username display
+ 
 async function loadUsername() {
     try {
         const response = await fetch('/auth/whoami');
@@ -28,7 +52,7 @@ async function loadUsername() {
     }
 }
 
-async function PopulateNotesList()
+async function populateNotesList()
 {
     try 
     {
@@ -64,18 +88,16 @@ async function PopulateNotesList()
     }
 }
 
-/**
- * Select a note and load its content into the editor
- */
+// Select a note and load its content into the editor
+ 
 function selectNote(noteElement) {
-    // Remove selection from previously selected note
+    
+    // Remove selection from all notes
     document.querySelectorAll('.note-item.selected').forEach(el => {
         el.classList.remove('selected');
     });
-    
     // Mark this note as selected
     noteElement.classList.add('selected');
-    
     // Store the current note title
     currentNoteTitle = noteElement.dataset.title;
     
@@ -84,9 +106,8 @@ function selectNote(noteElement) {
     document.getElementById('noteContent').value = noteElement.dataset.content;
 }
 
-/**
- * Delete the currently selected note
- */
+// Delete the currently selected note
+ 
 async function DeleteNote() {
     if (!currentNoteTitle) {
         alert('No note selected. Click on a note first.');
@@ -111,7 +132,7 @@ async function DeleteNote() {
             currentNoteTitle = null;
             
             // Refresh list
-            await PopulateNotesList();
+            await populateNotesList();
         } else {
             alert('Failed to delete note: ' + (data.error || 'Unknown error'));
         }
@@ -156,7 +177,7 @@ async function CreateNote()
             document.getElementById('noteContent').value = '';
             
             // Refresh notes list
-            await PopulateNotesList();
+            await populateNotesList();
         } 
         else 
         {
@@ -187,15 +208,44 @@ async function handleLogout() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    // Fetch and display username
     const userData = await loadUsername();
     
     // Load notes list
-    await PopulateNotesList();
+    await populateNotesList();
 
     // Add note button click handler
-    document.querySelector('.add-btn').addEventListener('click', () => CreateNote(userData.uuid));
+    document.querySelector('.add-btn').addEventListener('click', () => CreateNote());
     
     // Delete note button click handler
     document.querySelector('.delete-btn').addEventListener('click', () => DeleteNote());
+    
+    // Mode toggle buttons
+    document.getElementById('previewBtn').addEventListener('click', () => setPreviewMode(true));
+    document.getElementById('editBtn').addEventListener('click', () => setPreviewMode(false));
+    
+    // Set default mode to Edit on load
+    setPreviewMode(false);
+
+    // Clear button handler
+    document.querySelector('.clear-btn').addEventListener('click', () => {
+        if (confirm('Clear the note editor?')) {
+            document.getElementById('noteTitle').value = '';
+            document.getElementById('noteContent').value = '';
+            currentNoteTitle = null;
+        }
+    });
+});
+
+// Save note hotkey: Ctrl+S
+window.addEventListener('keydown', function(e) 
+{
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') 
+    {
+        e.preventDefault();
+
+        if (typeof CreateNote === 'function') 
+        {
+            CreateNote();
+        }
+    }
 });
