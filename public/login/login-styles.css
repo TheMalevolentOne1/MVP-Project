@@ -88,3 +88,14 @@ button:hover {
 .signup-link a:hover {
     text-decoration: underline;
 }
+
+.error-box {
+    background-color: #ffe0e0;
+    border: 1px solid #ff4444;
+    color: #cc0000;
+    padding: 12px;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-size: 0.95rem;
+}
