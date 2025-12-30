@@ -89,15 +89,16 @@ async function populateNotesList()
 }
 
 // Select a note and load its content into the editor
- 
 function selectNote(noteElement) {
     
-    // Remove selection from all notes
+    // Remove selection from all notes (Only one button can be selected at a time)
     document.querySelectorAll('.note-item.selected').forEach(el => {
         el.classList.remove('selected');
     });
-    // Mark this note as selected
+    
+    // Mark note as selected
     noteElement.classList.add('selected');
+    
     // Store the current note title
     currentNoteTitle = noteElement.dataset.title;
     
@@ -254,6 +255,32 @@ async function editNoteContent(oldTitle, newTitle, content) {
     }
 }
 
+async function saveNote() {
+    if (!currentNoteTitle) 
+    {
+        alert('No note selected. Click on a note first.');
+        return;
+    }
+
+    const newTitle = document.getElementById('noteTitle').value.trim();
+    const content = document.getElementById('noteContent').value.trim();
+    
+    const response = await fetch(`/user/notes/${encodeURIComponent(currentNoteTitle)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ newTitle, content })
+    });
+    
+    const data = await response.json();
+    if (data.success) {
+        currentNoteTitle = newTitle;
+        await populateNotesList();
+        alert('Note saved!');
+    } else {
+        alert('Failed to save note: ' + (data.error || 'Unknown error'));
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
     const userData = await loadUsername();
     
@@ -281,6 +308,9 @@ document.addEventListener('DOMContentLoaded', async () => {
             currentNoteTitle = null;
         }
     });
+
+    // Save button handler
+    document.querySelector('.save-btn').addEventListener('click', () => saveNote());
 });
 
 // Save note hotkey: Ctrl+S
@@ -289,8 +319,10 @@ window.addEventListener('keydown', function(e)
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') 
     {
         e.preventDefault();
-
-        if (databaseHandler.doesNoteExist(currentNoteTitle)) { if (confirm("Do you want to save changes to the current note?")) editNoteContent(currentNoteTitle, document.getElementById('noteTitle').value, document.getElementById('noteContent').value); }
-        else if (confirm('Create new note?')) { CreateNote(); }
+        if (currentNoteTitle) {
+            if (confirm("Do you want to save changes to the current note?")) saveNote();
+        } else if (confirm('Create new note?')) {
+            CreateNote();
+        }
     }
 });

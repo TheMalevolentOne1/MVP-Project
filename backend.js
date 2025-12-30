@@ -246,6 +246,38 @@ app.post('/user/notes', async (req, res) => {
     }
 });
 
+app.patch('/user/notes/:title', async (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const userId = req.session.userId;
+    const oldTitle = decodeURIComponent(req.params.title);
+    const { newTitle, content } = req.body;
+
+    if (!newTitle) {
+        return res.status(400).json({ success: false, error: 'New title is required' });
+    }
+
+    // Truncate new title to 30 characters
+    const truncatedNewTitle = newTitle.substring(0, 30);
+
+    try {
+        // Encrypt content with AES
+        const encryptedContent = CryptoJS.AES.encrypt(content || '', userId).toString();
+
+        await databaseHandler.EditNoteContent(userId, oldTitle, truncatedNewTitle, encryptedContent);
+        return res.json({ success: true });
+    } catch (error) {
+        // Handle duplicate title error (MySQL error 1062)
+        if (error.code === 'ER_DUP_ENTRY' || error.sqlState === '23000') {
+            return res.status(409).json({ success: false, error: 'No duplicates allowed' });
+        }
+        console.error('Error editing note:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
 app.delete('/user/notes/:title', async (req, res) => {
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
