@@ -2,7 +2,7 @@
 fetch('/auth/whoami')
     .then(res => res.json())
     .then(data => {
-        if (data.loggedIn) window.location.href = '../dashboard.html';
+        if (data.loggedIn) window.location.href = '/dashboard.html';
     });
 
 function showError(msg) 
@@ -63,7 +63,7 @@ document.addEventListener('DOMContentLoaded', function()
                 sessionStorage.setItem('userEmail', data.email);
                 
                 alert('Account created successfully!');
-                window.location.href = '../dashboard.html';
+                window.location.href = '/dashboard.html';
             } else {
                 showError(data.error || 'Registration failed. Please try again.');
             }

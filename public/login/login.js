@@ -2,7 +2,7 @@
 fetch('/auth/whoami')
     .then(res => res.json())
     .then(data => {
-        if (data.loggedIn) window.location.href = '../dashboard.html';
+        if (data.loggedIn) window.location.href = '/dashboard.html';
     });
 
 function showError(msg) {
@@ -39,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function()
             
             if (data.success) {
                 sessionStorage.setItem('userEmail', data.email);
-                window.location.href = '../dashboard.html';
+                window.location.href = '/dashboard.html';
             } else {
                 showError(data.error || 'Invalid email or password');
             }

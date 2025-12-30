@@ -4,10 +4,10 @@ ENDPOINTS OVERVIEW PLAN
 =============================================================================
 
 AUTH:
-  POST /auth/register  → Create user, hash password, set session
-  POST /auth/login     → Verify password, set session
-  POST /auth/logout    → Destroy session
-  GET  /auth/whoami        → Check if logged in, return user email
+  POST /auth/register  → Create user, hash password, set session ✔️
+  POST /auth/login     → Verify password, set session ✔️
+  POST /auth/logout    → Destroy session ✔️
+  GET  /auth/whoami        → Check if logged in, return user email ✔️
 
 NOTES:
   GET    /api/notes        → List all notes for logged-in user
