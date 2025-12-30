@@ -71,7 +71,6 @@ app.get('/auth/whoami', (req, res) =>
 });
 
 app.post('/auth/login', async (req, res) => {
-    // Guard: Check if request body exists
     if (!req.body.length === 0) {
         return res.status(400).json({ success: false, error: 'Request body is empty' });
     }
@@ -116,9 +115,14 @@ app.post('/auth/login', async (req, res) => {
 });
 
 app.post('/auth/register', async (req, res) => {
-    // Guard: Check if request body exists
     if (!req.body.length === 0) {
         return res.status(400).json({ success: false, error: 'Request body is empty' });
+    }
+
+    // If already logged in, redirect to dashboard
+    if (req.session && req.session.userId) 
+    {
+        return res.redirect('/dashboard.html');
     }
 
     const { email, password } = req.body;
@@ -154,7 +158,7 @@ app.post('/auth/register', async (req, res) => {
     } catch (error) {
 
         // Temp Error Catch: Handle duplicate email (MySQL error 1062)
-        if (error.errno === 1062) {
+        if (error.sqlState === '23000') {
             return res.status(409).json({ success: false, error: 'Email already registered' });
         }
         console.error('Registration error:', error);
