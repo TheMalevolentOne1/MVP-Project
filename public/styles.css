@@ -53,3 +53,141 @@ button:hover {
 button:active {
     transform: translateY(0);
 }
+/* Navbar Styles (for all pages except landing) */
+.navbar {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+}
+
+.navbar-logo {
+    height: 40px;
+    cursor: pointer;
+}
+
+.navbar-links {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+}
+
+.navbar-links a {
+    color: white;
+    text-decoration: none;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    padding: 8px 16px;
+    border-radius: 20px;
+}
+
+.navbar-links a:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+}
+
+.navbar-links a.active {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Page container with navbar */
+.page-container {
+    margin-top: 80px;
+    width: 100%;
+    max-width: 1400px;
+    padding: 20px;
+}
+
+/* Notes Page Styles */
+.notes-container {
+    display: flex;
+    gap: 20px;
+    background-color: rgba(255, 255, 255, 0.15);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(10px);
+    min-height: calc(100vh - 140px);
+}
+
+.notes-list-block {
+    flex: 0 0 300px;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 20px;
+    overflow-y: auto;
+    max-height: calc(100vh - 190px);
+}
+
+.notes-list-block h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.note-item {
+    background-color: rgba(255, 255, 255, 0.15);
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.note-item:hover {
+    background-color: rgba(255, 255, 255, 0.25);
+    transform: translateX(5px);
+}
+
+.note-item.active {
+    background-color: rgba(255, 255, 255, 0.3);
+    border-color: white;
+}
+
+.note-item h3 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.note-item p {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+.notes-content-block {
+    flex: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 15px;
+    padding: 30px;
+    overflow-y: auto;
+    max-height: calc(100vh - 190px);
+}
+
+.notes-content-block h2 {
+    margin-bottom: 20px;
+    font-size: 2rem;
+}
+
+.notes-content-block .note-body {
+    line-height: 1.8;
+    text-align: left;
+}
+
+.empty-state {
+    text-align: center;
+    opacity: 0.6;
+    padding: 60px 20px;
+}
+
+.empty-state p {
+    font-size: 1.2rem;
+}
