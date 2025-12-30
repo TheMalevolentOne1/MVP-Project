@@ -70,6 +70,16 @@ app.get('/auth/whoami', (req, res) =>
         return res.json({ loggedIn: false });
 });
 
+app.post('/auth/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            return res.status(500).json({ success: false, error: 'Logout failed' });
+        }
+        res.clearCookie('connect.sid');
+        return res.json({ success: true, message: 'Logged out' });
+    });
+});
+
 app.post('/auth/login', async (req, res) => {
     if (!req.body.length === 0) {
         return res.status(400).json({ success: false, error: 'Request body is empty' });
