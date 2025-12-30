@@ -24,6 +24,9 @@ EVENTS (Calendar):
 =============================================================================
 */
 
+require('dotenv').config();
+const { EXPRESS_PORT } = process.env;
+
 const crypto = require('crypto');
 const CryptoJS = require('crypto-js');
 const fs = require('fs');
@@ -53,6 +56,10 @@ app.use(session({
     }
 }));
 
+app.get('/auth', (req, res) => {
+    res.json({ message: 'Auth endpoint is working.' });
+});
+
 app.get('/auth/whoami', (req, res) => 
 {
     // Verify Session
@@ -64,6 +71,11 @@ app.get('/auth/whoami', (req, res) =>
 });
 
 app.post('/auth/login', async (req, res) => {
+    // Guard: Check if request body exists
+    if (!req.body.length === 0) {
+        return res.status(400).json({ success: false, error: 'Request body is empty' });
+    }
+
     // If already logged in, redirect to dashboard
     if (req.session && req.session.userId) 
     {
@@ -78,27 +90,25 @@ app.post('/auth/login', async (req, res) => {
     }
 
     try {
-        // 1. Query backend for user by email and password
-        var email_check = await databaseHandler.verifyUserEmail(email)['verify'];
-        var password_check = await databaseHandler.verifyUserPassword(password)['verify'];
+        // 1. Look up user by email
+        const { verify, user } = await databaseHandler.verifyUserEmail(email);
 
-        if (!email_check) res.send(401).json({ success: false, error: 'Invalid email or password!' }); 
-        if (!password_check) res.send(403).json({ success: false, error: 'Invalid email or password!' });
-
-        const user = await email_check['user'];
-
-        console.log(user); // for testing
-
-        // 2. Compare password with bcrypt
-        const match = await bcrypt.compare(password, user.password_hash);
-        if (!match) 
+        // 2. Check if user exists
+        if (!verify || !user) {
             return res.status(401).json({ success: false, error: 'Invalid email or password' });
+        }
 
-        // 3. Create session var with user id for verification
-        req.session.userId = user.id;
+        // 3. Compare password with bcrypt
+        const match = await bcrypt.compare(password, user.password_hash);
+        if (!match) {
+            return res.status(401).json({ success: false, error: 'Invalid email or password' });
+        }
 
-        // 4. Respond with success by verifying user info
-        return res.json({ success: true, userId: user.id, email: user.email });
+        // 4. Create session with user uuid
+        req.session.userId = user.uuid;
+
+        // 5. Respond with success
+        return res.json({ success: true, userId: user.uuid, email: user.email });
     } catch(error) {
         console.error('Login error:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
@@ -106,6 +116,11 @@ app.post('/auth/login', async (req, res) => {
 });
 
 app.post('/auth/register', async (req, res) => {
+    // Guard: Check if request body exists
+    if (!req.body.length === 0) {
+        return res.status(400).json({ success: false, error: 'Request body is empty' });
+    }
+
     const { email, password } = req.body;
 
     // 1. Validate inputs
@@ -134,15 +149,20 @@ app.post('/auth/register', async (req, res) => {
         // 4. Create session
         req.session.userId = userId;
 
-        // 5. Respond with success
-        return res.status(200).json({ success: true, userId, email }).redirect('/dashboard.html');
+        // 5. Respond with success (frontend handles redirect)
+        return res.status(201).json({ success: true, userId, email });
     } catch (error) {
+
+        // Temp Error Catch: Handle duplicate email (MySQL error 1062)
+        if (error.errno === 1062) {
+            return res.status(409).json({ success: false, error: 'Email already registered' });
+        }
         console.error('Registration error:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
-// Start the server (typically at the end of the file)
-app.listen(3000, () => {
-    console.log('Server running on port 3000');
+// Start the server
+app.listen(EXPRESS_PORT, () => {
+    console.log(`Server running on port ${EXPRESS_PORT}`);
 });

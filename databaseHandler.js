@@ -25,33 +25,24 @@ pool.getConnection()
 
 async function verifyUserEmail(email) {
     const [rows] = await pool.query(
-        'SELECT id FROM users WHERE email = ? LIMIT 1',
+        'SELECT uuid, email, password_hash FROM users WHERE email = ? LIMIT 1',
         [email]
     );
-    return {verify: Boolean(rows.length > 0), user: rows};
-}
-
-async function verifyUserPassword(password) {
-    const [rows] = await pool.query(
-        'SELECT password_hash FROM users WHERE password = ? LIMIT 1',
-        [password]
-    );
-    return {verify: Boolean(rows.length > 0), user: rows};
+    return {verify: Boolean(rows.length > 0), user: rows[0]};
 }
 
 async function addNewUser(uuid, email, passwordHash)
 {
-    if (await databaseHandler.pool.execute(
-            'INSERT INTO users (id, email, password_hash) VALUES (?, ?, ?)',
-            [userId, email, passwordHash]
-        ))
-    {
+    try {
+        await pool.execute(
+            'INSERT INTO users (uuid, email, password_hash) VALUES (?, ?, ?)',
+            [uuid, email, passwordHash]
+        );
         return true;
-    } 
-    else
-    {
+    } catch (err) {
+        console.error('addNewUser error:', err);
         return false;
     }
 }
 
-module.exports = { verifyUserEmail, verifyUserPassword, addNewUser };
+module.exports = { verifyUserEmail, addNewUser };

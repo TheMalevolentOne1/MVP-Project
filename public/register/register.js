@@ -1,3 +1,10 @@
+// Check if already logged in
+fetch('/auth/whoami')
+    .then(res => res.json())
+    .then(data => {
+        if (data.loggedIn) window.location.href = '../dashboard.html';
+    });
+
 function showError(msg) 
 {
     const box = document.getElementById('errorBox');
