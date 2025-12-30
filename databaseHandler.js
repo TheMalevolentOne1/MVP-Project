@@ -57,21 +57,21 @@ async function getUserEmailById(userId)
 
 async function CreateNote(uuid, title, content = '') {
     try {
-        const [result] = await pool.execute(
-            'INSERT INTO notes (uuid, title, content) VALUES (?, ?, ?)',
+        await pool.execute(
+            'INSERT INTO notes (uuid, title, body) VALUES (?, ?, ?)',
             [uuid, title, content]
         );
-        return { success: true, noteId: result.insertId };
+        return { success: true, title };
     } catch (err) {
-        return { success: false, error: err.message };
+        throw err;
     }
 }
 
-async function EditNoteContent(noteId, uuid, title, content) {
+async function EditNoteContent(uuid, oldTitle, newTitle, content) {
     try {
         await pool.execute(
-            'UPDATE notes SET title = ?, content = ? WHERE id = ? AND uuid = ?',
-            [title, content, noteId, uuid]
+            'UPDATE notes SET title = ?, body = ? WHERE uuid = ? AND title = ?',
+            [newTitle, content, uuid, oldTitle]
         );
         return { success: true };
     } catch (err) {
@@ -79,11 +79,11 @@ async function EditNoteContent(noteId, uuid, title, content) {
     }
 }
 
-async function DeleteNote(noteId, uuid) {
+async function DeleteNote(uuid, title) {
     try {
         await pool.execute(
-            'DELETE FROM notes WHERE uuid = ? AND uuid = ?',
-            [noteId, uuid]
+            'DELETE FROM notes WHERE uuid = ? AND title = ?',
+            [uuid, title]
         );
         return { success: true };
     } catch (err) {
@@ -94,7 +94,7 @@ async function DeleteNote(noteId, uuid) {
 async function GetUserNotes(uuid) {
     try {
         const [rows] = await pool.query(
-            'SELECT uuid, title, content, created_at, updated_at FROM notes WHERE uuid = ? ORDER BY updated_at DESC',
+            'SELECT title, body, created_at, updated_at FROM notes WHERE uuid = ? ORDER BY updated_at DESC',
             [uuid]
         );
         return rows;
@@ -106,7 +106,7 @@ async function GetUserNotes(uuid) {
 async function GetNoteByTitle(uuid, title) {
     try {
         const [rows] = await pool.query(
-            'SELECT uuid, title, content, created_at, updated_at FROM notes WHERE uuid = ? AND title = ? LIMIT 1',
+            'SELECT title, body, created_at, updated_at FROM notes WHERE uuid = ? AND title = ? LIMIT 1',
             [uuid, title]
         );
         return rows.length > 0 ? rows[0] : null;
@@ -115,4 +115,4 @@ async function GetNoteByTitle(uuid, title) {
     }
 }
 
-module.exports = { verifyUserEmail, addNewUser, getUserEmailById, CreateNote, EditNoteContent, DeleteNote, GetUserNotes, GetNoteByTitle };
+module.exports = { verifyUserEmail, addNewUser, getUserEmailById, CreateNote, EditNoteContent, DeleteNote, getUserNotes: GetUserNotes, getNoteByTitle: GetNoteByTitle };

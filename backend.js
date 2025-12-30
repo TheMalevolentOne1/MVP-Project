@@ -10,16 +10,16 @@ AUTH:
   GET  /auth/whoami        → Check if logged in, return user email ✔️
 
 NOTES:
-  GET    /api/notes        → List all notes for logged-in user
-  GET    /api/notes/:title    → Get single note by ID
-  POST   /api/notes        → Create new note
-  PATCH  /api/notes/:title    → Update note title/body
-  DELETE /api/notes/:title    → Delete note
+  GET    /user/notes        → List all notes for logged-in user
+  GET    /user/notes/:title    → Get single note by ID
+  POST   /user/notes        → Create new note
+  PATCH  /user/notes/:title    → Update note title/body
+  DELETE /user/notes/:title    → Delete note
 
 EVENTS (Calendar):
-  GET    /api/events       → List all events for user
-  POST   /api/events       → Create event (or import from ICS)
-  DELETE /api/events/:id   → Delete event
+  GET    /user/events       → List all events for user
+  POST   /user/events       → Create event (or import from ICS)
+  DELETE /user/events/:id   → Delete event
 
 =============================================================================
 */
@@ -107,7 +107,9 @@ app.post('/auth/login', async (req, res) => {
         }
 
         // 3. Compare password with bcrypt
-        const match = await bcrypt.compare(password, user.password_hash);
+        // First decrypt the stored password hash using UUID as key
+        const decryptedPasswordHash = CryptoJS.AES.decrypt(user.password_hash, user.uuid).toString(CryptoJS.enc.Utf8);
+        const match = await bcrypt.compare(password, decryptedPasswordHash);
         if (!match) {
             return res.status(401).json({ success: false, error: 'Invalid email or password' });
         }
@@ -146,13 +148,18 @@ app.post('/auth/register', async (req, res) => {
     try {
         var { verify } = await databaseHandler.verifyUserEmail(email);
 
-        if (verify) { res.send(409).json({ success: false, error: 'Email already registered' }); }
+        if (verify) { 
+            return res.status(409).json({ success: false, error: 'Email already registered' }); 
+        }
 
         // Hash password and create user
         const userId = crypto.randomUUID();
         const passwordHash = await bcrypt.hash(password, 10);
         
-        const created = await databaseHandler.addNewUser(userId, email, passwordHash);
+        // Encrypt password hash with AES using UUID as key
+        const encryptedPasswordHash = CryptoJS.AES.encrypt(passwordHash, userId).toString();
+        
+        const created = await databaseHandler.addNewUser(userId, email, encryptedPasswordHash);
         
         if (!created) {
             return res.status(500).json({ success: false, error: 'Failed to create user' });
@@ -176,11 +183,11 @@ app.post('/auth/register', async (req, res) => {
 
 /*
 NOTES:
-  GET    /api/notes        → List all notes for logged-in user
-  GET    /api/notes/:title    → Get single note by ID
-  POST   /api/notes        → Create new note
-  PATCH  /api/notes/:title    → Update note title/body
-  DELETE /api/notes/:title    → Delete note
+  GET    /user/notes        → List all notes for logged-in user
+  GET    /user/notes/:title    → Get single note by ID
+  POST   /user/notes        → Create new note
+  PATCH  /user/notes/:title    → Update note title/body
+  DELETE /user/notes/:title    → Delete note
 */
 
 app.get('/user/notes', async (req, res) => {
@@ -191,14 +198,23 @@ app.get('/user/notes', async (req, res) => {
     const userId = req.session.userId;
     try {
         const notes = await databaseHandler.getUserNotes(userId);
-        return res.json({ success: true, notes });
+        
+        // Decrypt body only (title is stored as plaintext for uniqueness)
+        const decryptedNotes = notes.map(note => ({
+            title: note.title,
+            content: CryptoJS.AES.decrypt(note.body, userId).toString(CryptoJS.enc.Utf8),
+            created_at: note.created_at,
+            updated_at: note.updated_at
+        }));
+        
+        return res.json({ success: true, notes: decryptedNotes });
     } catch (error) {
         console.error('Error fetching notes:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });
 
-app.post('/api/notes', async (req, res) => {
+app.post('/user/notes', async (req, res) => {
     // Verify Session
     if (!req.session || !req.session.userId)
         return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -212,13 +228,34 @@ app.post('/api/notes', async (req, res) => {
     }
 
     try {
-        const result = await databaseHandler.CreateNote(userId, title, content);
-        if (!result.success) {
-            return res.status(500).json({ success: false, error: 'Failed to create note' });
-        }
-        return res.status(201).json({ success: true, noteId: result.noteId });
+        // Encrypt body only with AES (title stored plaintext for uniqueness)
+        const encryptedContent = CryptoJS.AES.encrypt(content || '', userId).toString();
+        
+        await databaseHandler.CreateNote(userId, title, encryptedContent);
+        return res.status(201).json({ success: true });
     } catch (error) {
-        console.error('Error creating note:', error);
+        // Handle duplicate title error (MySQL error 1062)
+        if (error.code === 'ER_DUP_ENTRY' || error.sqlState === '23000') {
+            return res.status(409).json({ success: false, error: 'No duplicates allowed' });
+        }
+        console.error('Error creating note:', error.message);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.delete('/user/notes/:title', async (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    
+    const userId = req.session.userId;
+    const title = decodeURIComponent(req.params.title);
+    
+    try {
+        await databaseHandler.DeleteNote(userId, title);
+        return res.json({ success: true });
+    } catch (error) {
+        console.error('Error deleting note:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });

@@ -25,3 +25,17 @@ async function loadUsername() {
         document.getElementById('username').textContent = 'User';
     }
 }
+/**
+ * Handles user logout
+ */
+async function handleLogout() {
+    try {
+        const response = await fetch('/auth/logout', { method: 'POST' });
+        if (response.ok) {
+            window.location.href = './login_page.html';
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout failed');
+    }
+}
