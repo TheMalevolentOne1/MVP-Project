@@ -28,6 +28,8 @@ async function verifyUserEmail(email) {
         'SELECT uuid, email, password_hash FROM users WHERE email = ? LIMIT 1',
         [email]
     );
+
+    console.log('verifyUserEmail rows:', rows);
     return {verify: Boolean(rows.length > 0), user: rows[0]};
 }
 
