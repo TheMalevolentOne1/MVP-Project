@@ -227,11 +227,14 @@ app.post('/user/notes', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Title is required' });
     }
 
+    // Truncate title to 30 characters
+    const truncatedTitle = title.substring(0, 30);
+
     try {
         // Encrypt body only with AES (title stored plaintext for uniqueness)
         const encryptedContent = CryptoJS.AES.encrypt(content || '', userId).toString();
         
-        await databaseHandler.CreateNote(userId, title, encryptedContent);
+        await databaseHandler.CreateNote(userId, truncatedTitle, encryptedContent);
         return res.status(201).json({ success: true });
     } catch (error) {
         // Handle duplicate title error (MySQL error 1062)
