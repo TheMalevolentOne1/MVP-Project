@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Adaptive Study Cipher - Notes</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="styles.css" />
+    </head>
+    <body class="notes-page">
+        <!-- Header Bar -->
+        <header class="notes-header">
+            <button class="logo-btn" onclick="window.location = 'index.html'">Logo</button>
+            <h1 class="notes-title">Your Notes, <span id="username">{Username}</span></h1>
+            <div class="profile-btn">Profile</div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="notes-wrapper">
+            <!-- Sidebar - Notes List -->
+            <div class="sidebar-container">
+                <div class="sidebar-header">Notes List</div>
+                <aside class="notes-sidebar">
+                    <div class="search-row">
+                        <input type="text" class="notes-search" placeholder="Search" />
+                        <button class="action-btn add-btn">+</button>
+                        <button class="action-btn delete-btn">-</button>
+                    </div>
+                    <div class="notes-list" id="notesList">
+                        <!-- Notes will be dynamically populated here by notes.js -->
+                    </div>
+                    <div class="confirm-delete" id="confirmDelete" style="display: none;">
+                        <p>Confirm Delete?</p>
+                        <button class="confirm-yes">Yes</button>
+                        <button class="confirm-no">No</button>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Main Editor Area -->
+            <main class="notes-main">
+                <!-- Mode Toggle -->
+                <div class="mode-toggle">
+                    <button class="mode-btn active" id="previewBtn">Preview</button>
+                    <button class="mode-btn" id="liveBtn">Live</button>
+                </div>
+
+                <!-- Notes Title -->
+                <input type="text" class="note-title-input" id="noteTitle" placeholder="Notes Title" />
+
+                <!-- Notes Content -->
+                <div class="notes-content">
+                    <textarea class="notes-textarea" id="noteContent" placeholder="Notes Content"></textarea>
+                    <div class="notes-preview" id="notePreview" style="display: none;"></div>
+                </div>
+            </main>
+        </div>
+        
+        <script src="./notes/notes.js"></script>
+    </body>
+</html>

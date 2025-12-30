@@ -29,7 +29,6 @@ const { EXPRESS_PORT } = process.env;
 
 const crypto = require('crypto');
 const CryptoJS = require('crypto-js');
-const fs = require('fs');
 const bcrypt = require('bcrypt');
 const express = require('express');
 const session = require('express-session');
@@ -60,14 +59,15 @@ app.get('/auth', (req, res) => {
     res.json({ message: 'Auth endpoint is working.' });
 });
 
-app.get('/auth/whoami', (req, res) => 
-{
+app.get('/auth/whoami', async (req, res) => {
     // Verify Session
-    if (req.session && req.session.userId)
-        return res.json({ loggedIn: true, userId: req.session.userId });
-    else 
-    // If No Session Exists
+    if (req.session && req.session.userId) {
+        var email = await databaseHandler.getUserEmailById(req.session.userId);
+        return res.json({ loggedIn: true, userId: req.session.userId, email });
+    } else {
+        // If No Session Exists
         return res.json({ loggedIn: false });
+    }
 });
 
 app.post('/auth/logout', (req, res) => {
@@ -86,8 +86,7 @@ app.post('/auth/login', async (req, res) => {
     }
 
     // If already logged in, redirect to dashboard
-    if (req.session && req.session.userId) 
-    {
+    if (req.session && req.session.userId) {
         return res.redirect('/dashboard.html');
     }
 
@@ -130,14 +129,13 @@ app.post('/auth/register', async (req, res) => {
     }
 
     // If already logged in, redirect to dashboard
-    if (req.session && req.session.userId) 
-    {
+    if (req.session && req.session.userId) {
         return res.redirect('/dashboard.html');
     }
 
     const { email, password } = req.body;
 
-    // 1. Validate inputs
+    // Validate inputs
     if (!email || !password) {
         return res.status(400).json({ success: false, error: 'Email and password required' });
     }
@@ -146,11 +144,11 @@ app.post('/auth/register', async (req, res) => {
     }
 
     try {
-        var { verify, user } = databaseHandler.verifyUserEmail(email);
+        var { verify } = await databaseHandler.verifyUserEmail(email);
 
         if (verify) { res.send(409).json({ success: false, error: 'Email already registered' }); }
 
-        // 3. Hash password and create user
+        // Hash password and create user
         const userId = crypto.randomUUID();
         const passwordHash = await bcrypt.hash(password, 10);
         
@@ -160,10 +158,10 @@ app.post('/auth/register', async (req, res) => {
             return res.status(500).json({ success: false, error: 'Failed to create user' });
         }
 
-        // 4. Create session
+        // Create session
         req.session.userId = userId;
 
-        // 5. Respond with success (frontend handles redirect)
+        // Respond with success (frontend handles redirect)
         return res.status(201).json({ success: true, userId, email });
     } catch (error) {
 
@@ -172,6 +170,55 @@ app.post('/auth/register', async (req, res) => {
             return res.status(409).json({ success: false, error: 'Email already registered' });
         }
         console.error('Registration error:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+/*
+NOTES:
+  GET    /api/notes        → List all notes for logged-in user
+  GET    /api/notes/:title    → Get single note by ID
+  POST   /api/notes        → Create new note
+  PATCH  /api/notes/:title    → Update note title/body
+  DELETE /api/notes/:title    → Delete note
+*/
+
+app.get('/user/notes', async (req, res) => {
+    // Verify Session
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    const userId = req.session.userId;
+    try {
+        const notes = await databaseHandler.getUserNotes(userId);
+        return res.json({ success: true, notes });
+    } catch (error) {
+        console.error('Error fetching notes:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.post('/api/notes', async (req, res) => {
+    // Verify Session
+    if (!req.session || !req.session.userId)
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    
+    const userId = req.session.userId;
+
+    const { title, content } = req.body;
+
+    if (!title) {
+        return res.status(400).json({ success: false, error: 'Title is required' });
+    }
+
+    try {
+        const result = await databaseHandler.CreateNote(userId, title, content);
+        if (!result.success) {
+            return res.status(500).json({ success: false, error: 'Failed to create note' });
+        }
+        return res.status(201).json({ success: true, noteId: result.noteId });
+    } catch (error) {
+        console.error('Error creating note:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });

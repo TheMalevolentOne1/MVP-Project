@@ -288,3 +288,379 @@ body.auth-page {
     text-align: center;
     font-size: 0.95rem;
 }
+
+/* Mode Toggle Switch */
+.mode-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.mode-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 32px;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    transition: 0.4s;
+    border-radius: 32px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 24px;
+    width: 24px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.toggle-switch input:checked + .slider {
+    background-color: rgba(255, 255, 255, 0.5);
+}
+
+.toggle-switch input:checked + .slider:before {
+    transform: translateX(28px);
+}
+
+.toggle-switch input:focus + .slider {
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+/* ========== NOTES PAGE STYLES ========== */
+.notes-page {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+/* Notes Header */
+.notes-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    margin-bottom: 20px;
+}
+
+.logo-btn {
+    background: white;
+    border: 2px solid #333;
+    padding: 10px 20px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.notes-title {
+    font-size: 1.8rem;
+    color: white;
+    font-style: italic;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.profile-btn {
+    background: white;
+    border: 2px solid #333;
+    border-radius: 50%;
+    width: 70px;
+    height: 70px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    color: #333;
+}
+
+/* Notes Wrapper */
+.notes-wrapper {
+    display: flex;
+    gap: 20px;
+    flex: 1;
+}
+
+/* Notes Sidebar */
+.sidebar-container {
+    display: flex;
+    flex-direction: column;
+    width: 280px;
+}
+
+.sidebar-header {
+    text-align: center;
+    font-size: 0.9rem;
+    color: white;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.notes-sidebar {
+    background: white;
+    border: 2px solid #333;
+    border-radius: 15px;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    flex: 1;
+}
+
+.search-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.notes-search {
+    padding: 10px 15px;
+    border: 2px solid #333;
+    border-radius: 25px;
+    font-size: 1rem;
+    text-align: center;
+    width: 100%;
+}
+
+.sidebar-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.action-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 2px solid #333;
+    background: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #333;
+    flex-shrink: 0;
+}
+
+.action-btn:hover {
+    background: #f0f0f0;
+}
+
+.notes-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.note-item {
+    padding: 15px;
+    border: 2px solid #333;
+    border-radius: 10px;
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    color: #333;
+    transition: background 0.2s;
+}
+
+.note-item:hover,
+.note-item.selected {
+    background: #e0e0e0;
+}
+
+.confirm-delete {
+    padding: 15px;
+    border: 2px solid #333;
+    border-radius: 10px;
+    text-align: center;
+    color: #333;
+}
+
+.confirm-delete p {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+.confirm-yes,
+.confirm-no {
+    padding: 8px 20px;
+    margin: 5px;
+    border: 1px solid #333;
+    border-radius: 5px;
+    cursor: pointer;
+    background: white;
+    color: #333;
+}
+
+/* Notes Main Content */
+.notes-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Mode Toggle - Notes Page Override */
+.notes-page .mode-toggle {
+    display: flex;
+    gap: 0;
+    margin: 0;
+    width: fit-content;
+}
+
+.mode-btn {
+    padding: 12px 30px;
+    border: 2px solid #333;
+    background: white;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+    border-radius: 0;
+}
+
+.mode-btn:first-child {
+    border-radius: 25px 0 0 25px;
+}
+
+.mode-btn:last-child {
+    border-radius: 0 25px 25px 0;
+    border-left: none;
+}
+
+.mode-btn.active {
+    background: #d0d0d0;
+}
+
+.note-title-input {
+    padding: 15px 25px;
+    border: 2px solid #333;
+    border-radius: 25px;
+    font-size: 1.1rem;
+    text-align: center;
+    background: white;
+    max-width: 400px;
+}
+
+.notes-content {
+    flex: 1;
+    background: white;
+    border: 2px solid #333;
+    border-radius: 20px;
+    padding: 20px;
+    min-height: 300px;
+}
+
+.notes-textarea {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    border: none;
+    resize: none;
+    font-size: 1rem;
+    font-family: inherit;
+    outline: none;
+    color: #333;
+}
+
+.notes-preview {
+    width: 100%;
+    height: 100%;
+    min-height: 280px;
+    color: #333;
+    font-size: 1rem;
+}
+
+/* ========== APP PAGE STYLES (Dashboard, Calendar) ========== */
+.app-page {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.app-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    margin-bottom: 15px;
+}
+
+.page-title {
+    font-size: 1.8rem;
+    color: white;
+    font-style: italic;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.app-nav {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding: 10px;
+}
+
+.nav-link {
+    color: white;
+    text-decoration: none;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 10px 20px;
+    border-radius: 25px;
+    transition: background 0.3s;
+}
+
+.nav-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.nav-link.active {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.app-content {
+    flex: 1;
+    background: white;
+    border-radius: 20px;
+    padding: 30px;
+    color: #333;
+}
