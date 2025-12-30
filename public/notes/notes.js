@@ -290,7 +290,7 @@ window.addEventListener('keydown', function(e)
     {
         e.preventDefault();
 
-        if (databaseHandlier.doesNoteExist(currentNoteTitle)) { if (confirm("Do you want to save changes to the current note?")) editNoteContent(currentNoteTitle, document.getElementById('noteTitle').value, document.getElementById('noteContent').value); }
+        if (databaseHandler.doesNoteExist(currentNoteTitle)) { if (confirm("Do you want to save changes to the current note?")) editNoteContent(currentNoteTitle, document.getElementById('noteTitle').value, document.getElementById('noteContent').value); }
         else if (confirm('Create new note?')) { CreateNote(); }
     }
 });
