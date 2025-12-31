@@ -10,16 +10,16 @@ AUTH:
   GET  /auth/whoami        → Check if logged in, return user email ✔️
 
 NOTES:
-  GET    /user/notes        → List all notes for logged-in user
-  GET    /user/notes/:title    → Get single note by ID
-  POST   /user/notes        → Create new note
-  PATCH  /user/notes/:title    → Update note title/body
-  DELETE /user/notes/:title    → Delete note
+  GET    /user/notes        → List all notes for logged-in user ✔️
+  GET    /user/notes/:title    → Get single note by Title ✔️
+  POST   /user/notes        → Create new note ✔️
+  PATCH  /user/notes/:title    → Update note title/body ✔️
+  DELETE /user/notes/:title    → Delete note ✔️
 
 EVENTS (Calendar):
-  GET    /user/events       → List all events for user
-  POST   /user/events       → Create event (or import from ICS)
-  DELETE /user/events/:id   → Delete event
+  GET    /user/events       → List all events for user ✔️
+  POST   /user/events       → Create event (or import from ICS (when implemented)) ✔️
+  DELETE /user/events/:id   → Delete event by ID ✔️
 
 =============================================================================
 */

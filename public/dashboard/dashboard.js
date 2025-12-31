@@ -25,9 +25,8 @@ async function loadUsername() {
         document.getElementById('username').textContent = 'User';
     }
 }
-/**
- * Handles user logout
- */
+
+//Handles user logout
 async function handleLogout() {
     try {
         const response = await fetch('/auth/logout', { method: 'POST' });
