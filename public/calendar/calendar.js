@@ -1,17 +1,6 @@
 // --- State ---
 let currentWeekStart = getMonday(new Date());
 
-// --- Initialization ---
-document.addEventListener('DOMContentLoaded', () => {
-    loadUsername(); // Your existing auth check
-    renderWeek(currentWeekStart);
-
-    document.getElementById('prevWeekBtn').onclick = () => changeWeek(-7);
-    document.getElementById('nextWeekBtn').onclick = () => changeWeek(7);
-});
-
-// --- Core Functions ---
-
 function changeWeek(days) {
     currentWeekStart.setDate(currentWeekStart.getDate() + days);
     renderWeek(currentWeekStart);
@@ -63,9 +52,6 @@ function renderWeek(startDate) {
     }
 }
 
-// --- Helpers ---
-
-// Reuse your existing Auth check from notes.js/dashboard.js
 async function loadUsername() {
     try {
         const response = await fetch('/auth/whoami');
@@ -111,3 +97,12 @@ function isToday(date) {
            date.getMonth() === today.getMonth() &&
            date.getFullYear() === today.getFullYear();
 }
+
+// --- Initialization ---
+document.addEventListener('DOMContentLoaded', () => {
+    loadUsername(); // Ensure user is logged in
+    renderWeek(currentWeekStart);
+
+    document.getElementById('prevWeekBtn').onclick = () => changeWeek(-7);
+    document.getElementById('nextWeekBtn').onclick = () => changeWeek(7);
+});
