@@ -1,3 +1,5 @@
+const databaseHandler = require("../../databaseHandler");
+
 // Track the currently selected note
 let currentNoteTitle = null;
 
@@ -255,8 +257,9 @@ async function editNoteContent(oldTitle, newTitle, content) {
     }
 }
 
-async function saveNote() {
-    if (!currentNoteTitle) 
+async function saveNote() 
+{
+    if (!currentNoteTitle && databaseHandler.getUserNotes().length >= 1)
     {
         alert('No note selected. Click on a note first.');
         return;
