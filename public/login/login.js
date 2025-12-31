@@ -34,14 +34,28 @@ document.addEventListener('DOMContentLoaded', function()
                 },
                 body: JSON.stringify({ email, password })
             });
-            
-            const data = await response.json();
-            
-            if (data.success) {
+
+            let data = null;
+            let isJson = false;
+            try {
+                const contentType = response.headers.get('content-type');
+                isJson = contentType && contentType.includes('application/json');
+                if (isJson) {
+                    data = await response.json();
+                }
+            } catch (jsonErr) {
+                // If JSON parsing fails, data remains null
+            }
+
+            if (response.ok && data && data.success) {
                 sessionStorage.setItem('userEmail', data.email);
                 window.location.href = '/dashboard.html';
+            } else if (data && data.error) {
+                showError(data.error);
+            } else if (!response.ok) {
+                showError('Login failed: ' + response.status + ' ' + response.statusText);
             } else {
-                showError(data.error || 'Invalid email or password');
+                showError('Invalid email or password');
             }
         } catch (error) {
             console.error('Login error:', error);

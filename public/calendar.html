@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Adaptive Study Cipher - Calendar</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="styles.css" />
+        <style>
+            /* Specific Calendar Grid Styles - Add these to styles.css later if you want */
+            .calendar-main {
+                display: flex;
+                flex-direction: column;
+                height: calc(100vh - 80px); /* Fill remaining height */
+                padding: 20px;
+                overflow: hidden; /* Prevent body scroll, let grid scroll */
+            }
+
+            .calendar-controls {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: white;
+                padding: 15px;
+                border-radius: 12px 12px 0 0;
+                border-bottom: 1px solid #eee;
+            }
+
+            .week-label {
+                font-size: 1.2rem;
+                font-weight: bold;
+                color: #2d3748;
+            }
+
+            .nav-btn {
+                background: #f7fafc;
+                border: 1px solid #e2e8f0;
+                padding: 5px 15px;
+                border-radius: 6px;
+                cursor: pointer;
+                transition: all 0.2s;
+            }
+            .nav-btn:hover { background: #edf2f7; }
+
+            /* The Grid Container */
+            .calendar-scroll-area {
+                background: white;
+                border-radius: 0 0 12px 12px;
+                overflow-y: auto;
+                flex: 1;
+                display: grid;
+                grid-template-columns: 60px repeat(7, 1fr); /* Time + 7 Days */
+                /* 50px header + 24 * 60px hour slots */
+                grid-template-rows: 50px repeat(24, 60px); 
+            }
+
+            /* Cells */
+            .grid-header-cell {
+                position: sticky;
+                top: 0;
+                background: #f8fafc;
+                border-bottom: 2px solid #e2e8f0;
+                border-right: 1px solid #edf2f7;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-weight: bold;
+                color: #4a5568;
+                z-index: 10;
+            }
+            .grid-header-cell.today {
+                color: #667eea;
+                border-bottom-color: #667eea;
+            }
+
+            .time-label-cell {
+                border-right: 1px solid #e2e8f0;
+                border-bottom: 1px solid #edf2f7;
+                font-size: 0.8rem;
+                color: #718096;
+                text-align: center;
+                padding-top: 5px;
+                background: #fff;
+            }
+
+            .grid-slot {
+                border-right: 1px solid #edf2f7;
+                border-bottom: 1px solid #edf2f7;
+                position: relative;
+                transition: background 0.1s;
+            }
+            .grid-slot:hover { background: #f7fafc; }
+
+        </style>
+    </head>
+    <body class="app-page"> <!-- Using your existing app-page class for gradient bg -->
+        
+        <!-- Standard App Header -->
+        <header class="app-header">
+            <div class="logo-area">
+                <button class="logo-btn" onclick="window.location = 'index.html'">ASC</button>
+            </div>
+            <nav class="app-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="calendar.html" class="nav-link active">Calendar</a>
+                <a href="#" onclick="handleLogout()" class="nav-link">Logout</a>
+            </nav>
+            <div class="user-profile">
+                <span id="username">Loading...</span>
+                <div class="profile-icon"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="calendar-main">
+            
+            <!-- Controls -->
+            <div class="calendar-controls">
+                <button class="nav-btn" id="prevWeekBtn">← Prev</button>
+                <span class="week-label" id="currentWeekLabel">Dec 29 - Jan 4</span>
+                <button class="nav-btn" id="nextWeekBtn">Next →</button>
+            </div>
+
+            <!-- The Grid -->
+            <div id="calendarGrid" class="calendar-scroll-area">
+                <!-- Javascript will fill this -->
+            </div>
+
+        </main>
+
+        <script src="./calendar/calendar.js"></script>
+    </body>
+</html>

@@ -55,6 +55,8 @@ app.use(session({
     }
 }));
 
+// AUTH ENDPOINTS
+
 app.get('/auth', (req, res) => {
     res.json({ message: 'Auth endpoint is working.' });
 });
@@ -70,6 +72,7 @@ app.get('/auth/whoami', async (req, res) => {
     }
 });
 
+// TODO: currently does not work?!
 app.post('/auth/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
@@ -181,14 +184,7 @@ app.post('/auth/register', async (req, res) => {
     }
 });
 
-/*
-NOTES:
-  GET    /user/notes        → List all notes for logged-in user
-  GET    /user/notes/:title    → Get single note by ID
-  POST   /user/notes        → Create new note
-  PATCH  /user/notes/:title    → Update note title/body
-  DELETE /user/notes/:title    → Delete note
-*/
+// NOTES ENDPOINTS
 
 app.get('/user/notes', async (req, res) => {
     // Verify Session
@@ -291,6 +287,74 @@ app.delete('/user/notes/:title', async (req, res) => {
         return res.json({ success: true });
     } catch (error) {
         console.error('Error deleting note:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+// EVENTS ENDPOINTS
+
+app.get('/user/events', async (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    const userId = req.session.userId;
+    try {
+        const events = await databaseHandler.getUserEvents(userId);
+        // Note: Calendar events are NOT encrypted for MVP simplicity/speed
+        return res.json({ success: true, events });
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.post('/user/events', async (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    const userId = req.session.userId;
+    const { title, start, end, location, description } = req.body;
+
+    // Basic Validation
+    if (!title || !start) {
+        return res.status(400).json({ success: false, error: 'Title and Start Date are required' });
+    }
+
+    try {
+        // Generate a UUID for the event
+        const eventId = crypto.randomUUID();
+        
+        // Call DB Handler
+        const result = await databaseHandler.createEvent(userId, eventId, title, start, end, location, description);
+        
+        // Return success with the new Event ID
+        return res.status(201).json({ success: true, eventId: result.eventId });
+    } catch (error) {
+        console.error('Error creating event:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+app.delete('/user/events/:id', async (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    const userId = req.session.userId;
+    const eventId = req.params.id;
+
+    if (!eventId) {
+        return res.status(400).json({ success: false, error: 'Event ID required' });
+    }
+
+    try {
+        const result = await databaseHandler.deleteEvent(userId, eventId);
+        if (result.success) {
+            return res.json({ success: true });
+        } else {
+            return res.status(500).json({ success: false, error: result.error });
+        }
+    } catch (error) {
+        console.error('Error deleting event:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });
