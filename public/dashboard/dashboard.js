@@ -1,34 +1,34 @@
-/**
- * dashboard.js - Dashboard Page Functionality
- */
-
-document.addEventListener('DOMContentLoaded', async () => {
-    await loadUsername();
-});
-
-/**
- * Fetches the current user's info and updates the username display
- */
-async function loadUsername() {
-    try {
+/*
+Brief: WhoAmI (Authentication Endpoint, Verifies Login)
+*/
+const loadUsername = async () => 
+{
+    try 
+    {
         const response = await fetch('/auth/whoami');
         const data = await response.json();
-        
-        if (!data.loggedIn) {
-            window.location.href = '/login_page.html';
-            return;
+        if (!data.loggedIn) 
+        {
+            window.location.href = '../login_page.html';
+        } 
+        else
+        {
+            document.getElementById('username').innerText = data.email || 'User';
         }
-        
-        document.getElementById('username').textContent = data.email || 'User';
-    } catch (error) {
-        console.error('Error fetching user info:', error);
-        document.getElementById('username').textContent = 'User';
+    } 
+    catch (e) 
+    {
+        console.error(e);
     }
 }
 
-//Handles user logout
-async function handleLogout() {
-    try {
+/*
+Brief: Logout API Call
+*/
+const handleLogout = async () =>
+{
+    try 
+    {
         const response = await fetch('/auth/logout', { method: 'POST' });
         if (response.ok) {
             window.location.href = './login_page.html';
@@ -38,3 +38,10 @@ async function handleLogout() {
         alert('Logout failed');
     }
 }
+
+/*
+Brief: dashboard.js - Dashboard Page Functionality
+*/
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadUsername();
+});
