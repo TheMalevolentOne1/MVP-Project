@@ -175,12 +175,11 @@ const daySelect = (weekStart, dayIndex, hour) =>
 Brief: Render Calendar for Week of Starting Date
 @Param1: startDate (Int, Monday of relevant week)
 */
-const renderWeek = (startDate) =>
-{
+const renderWeek = (startDate) => {
     const grid = document.getElementById('calendarGrid');
-    grid.innerHTML = ''; // Clear previous
+    grid.innerHTML = ''; // Clear previous grid
 
-    // Top-Left Empty Corner
+    // Top-Left Corner
     const corner = document.createElement('div');
     corner.classList.add('grid-header-cell');
     grid.appendChild(corner);
@@ -193,36 +192,51 @@ const renderWeek = (startDate) =>
         const header = document.createElement('div');
         header.classList.add('grid-header-cell');
         header.innerText = `${dayNames[i]} ${date.getDate()}`;
-        
         if (isToday(date)) header.classList.add('today');
-
         grid.appendChild(header);
     });
 
     updateLabel(weekDates);
 
-    // Time Slots (24 Hours)
-    for (let hour = 0; hour < HOURS_IN_DAY; hour++) {
-        // Time Label (Left Column)
+    // Time Slots (The Grid)
+
+    for (let hour = 0; hour < HOURS_IN_DAY; hour++) 
+    {
+        // Time Label (e.g., "09:00")
         const timeCell = document.createElement('div');
         timeCell.classList.add('time-label-cell');
-        timeCell.innerText = `${String(hour).padStart(2)}:00`;
+        timeCell.innerText = `${String(hour).padStart(2, '0')}:00`;
         grid.appendChild(timeCell);
 
+        // Day Columns for this hour
         for (let day = 0; day < DAYS_IN_WEEK; day++) {
             const slot = document.createElement('div');
             slot.classList.add('grid-slot');
             
-            // Interaction: Click to add event (Future Feature)
-            slot.onclick = () =>
-            {
-                daySelect(startDate, day, hour);
-            };
+            // Assign coordinates so renderEvents can find this slot
+            slot.dataset.day = day;
+            slot.dataset.hour = hour;
 
+            slot.onclick = () => daySelect(startDate, day, hour);
             grid.appendChild(slot);
         }
     }
-}
+
+    // Place the events on top of the newly created grid
+    //renderEvents(weekDates);
+};
+
+const fetchEvents = async () => 
+{
+    try {
+        const response = await fetch('/user/events');
+        const data = await response.json();
+        return data.success ? data.events : [];
+    } catch (e) {
+        console.error("Failed to fetch events", e);
+        return [];
+    }
+};
 
 // Brief: Get Monday of the week for start.
 let currentWeekStart = getMonday(new Date());
@@ -230,6 +244,12 @@ let currentWeekStart = getMonday(new Date());
 // Brief: Initialization
 document.addEventListener('DOMContentLoaded', () => 
 {
+    const eventForm = document.getElementById('eventForm');
+    eventForm.onsubmit = async (e) => {
+        e.preventDefault(); // Prevents page refresh
+        await handleCreateEvent();
+    };
+
     loadUsername(); // Ensure user is logged in
     renderWeek(currentWeekStart); // Render Current Week
 
