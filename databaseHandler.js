@@ -127,4 +127,61 @@ async function doesNoteExist(uuid, title) {
     }
 }
 
-module.exports = { verifyUserEmail, addNewUser, getUserEmailById, CreateNote, EditNoteContent, DeleteNote, getUserNotes: GetUserNotes, getNoteByTitle: GetNoteByTitle, doesNoteExist };
+// EVENT FUNCTIONS
+
+async function getUserEvents(uuid) {
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, title, start, end_time, location, description, created_at FROM calendar_events WHERE uuid = ? ORDER BY start ASC',
+            [uuid]
+        );
+        return rows;
+    } catch (err) {
+        console.error('Error fetching user events:', err);
+        throw err;
+    }
+}
+
+async function createEvent(uuid, title, start, end_time, location, description) {
+    try {
+        const [result] = await pool.query(
+            'INSERT INTO calendar_events (uuid, title, start, end_time, location, description) VALUES (?, ?, ?, ?, ?, ?)',
+            [uuid, title, start, end_time, location, description]
+        );
+        return { success: true, id: result.insertId };
+    } catch (err) {
+        console.error('Error creating event:', err);
+        throw err;
+    }
+}
+
+async function deleteEvent(uuid, id) {
+    try {
+        const [result] = await pool.query(
+            'DELETE FROM calendar_events WHERE id = ? AND uuid = ?',
+            [id, uuid]
+        );
+        
+        if (result.affectedRows > 0) {
+            return { success: true };
+        } else {
+            return { success: false, error: 'Event not found or unauthorized' };
+        }
+    } catch (err) {
+        console.error('Error deleting event:', err);
+        return { success: false, error: err.message };
+    }
+}
+
+async function doesEventExist(uuid, id) {
+    try {
+        const [rows] = await pool.query(
+            'SELECT 1 FROM calendar_events WHERE uuid = ? AND id = ? LIMIT 1',
+            [uuid, id]
+        );
+        return rows.length > 0;
+    } catch (err) {
+        return false;
+    }
+}
+module.exports = { verifyUserEmail, addNewUser, getUserEmailById, CreateNote, EditNoteContent, DeleteNote, getUserNotes: GetUserNotes, getNoteByTitle: GetNoteByTitle, doesNoteExist, getUserEvents, createEvent, deleteEvent, doesEventExist };

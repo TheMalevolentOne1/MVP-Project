@@ -8,11 +8,23 @@
         <script src="https://cdn.jsdelivr.net/npm/commonmark@0.31.0/dist/commonmark.min.js"></script>
     </head>
     <body class="notes-page">
-        <!-- Header Bar -->
-        <header class="notes-header">
-            <button class="logo-btn" onclick="window.location = 'index.html'">Logo</button>
-            <h1 class="notes-title">Your Notes, <span id="username">{Username}</span></h1>
-            <button class="dashboard-btn" onclick="window.location = 'dashboard.html'">Dashboard</button>
+        <header class="app-header">
+            <div class="logo-area">
+                <button class="logo-btn" onclick="window.location = 'index.html'">ASC</button>
+            </div>
+            
+            <h1 class="page-title">Calendar, <span id="username">Loading...</span></h1>
+            
+            <nav class="app-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="notes.html" class="nav-link">Notes</a>
+                <a href="calendar.html" class="nav-link active">Calendar</a>
+                <a href="#" onclick="handleLogout()" class="nav-link">Logout</a>
+            </nav>
+        
+            <div class="user-profile">
+                <div class="profile-icon"></div>
+            </div>
         </header>
 
         <!-- Main Content -->

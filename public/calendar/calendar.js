@@ -121,17 +121,36 @@ const closeEventModal = () =>
     document.getElementById('eventModal').classList.add('hidden');
 };
 
-const handleCreateEvent = () =>
+const handleCreateEvent = async () =>
 {
     const title = document.getElementById('eventTitle').value;
     const start = document.getElementById('eventStart').value;
-    const end = document.getElementById('eventEnd').value;
+    const end_time = document.getElementById('eventEnd').value;
     const location = document.getElementById('eventLocation').value;
     const description = document.getElementById('eventDescription').value;
 
-    console.log({ title, start, end, location, description });
+    try {
+        const response = await fetch('/user/events', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ title, start, end_time, location, description })
+        });
 
-    closeEventModal();
+        const data = await response.json();
+
+        if (data.success) {
+            console.log('Event created with ID:', data.id);
+            closeEventModal();
+            renderWeek(currentWeekStart); // Refresh calendar
+        } else {
+            alert('Failed to create event: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error creating event:', error);
+        alert('Failed to create event');
+    }
 };
 
 

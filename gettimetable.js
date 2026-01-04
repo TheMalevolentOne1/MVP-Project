@@ -8,8 +8,6 @@ async function fetchTimetable(user, pass) {
   // HTTP Basic Authentication: Base64 to encode "username:password"
   // Source: https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication#basic_authentication_scheme
   var token = Buffer.from(`${user}:${pass}`, 'utf8').toString('base64');
-  var user = process.env.USEDR_UNI_ID || '';
-  var pass = process.env.USER_P || '';
 
   try {
     // GET request

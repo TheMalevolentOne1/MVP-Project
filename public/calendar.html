@@ -6,17 +6,20 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="styles.css" />
     </head>
+
     <body class="app-page">
         <header class="app-header">
             <div class="logo-area">
                 <button class="logo-btn" onclick="window.location = 'index.html'">ASC</button>
             </div>
+
             <nav class="app-nav">
                 <a href="dashboard.html" class="nav-link">Dashboard</a>
                 <a href="notes.html" class="nav-link">Notes</a>
                 <a href="calendar.html" class="nav-link active">Calendar</a>
                 <a href="#" onclick="handleLogout()" class="nav-link">Logout</a>
             </nav>
+
             <div class="user-profile">
                 <span id="username">Loading...</span>
                 <div class="profile-icon"></div>
@@ -32,7 +35,7 @@
           <form id="eventForm">
             <label>
               Title
-              <input type="text" id="eventTitle" placeholder="Enter event title" required />
+              <input type="text" id="eventTitle" placeholder="Enter Event Title" required />
             </label>
       
             <label>
@@ -47,12 +50,12 @@
       
             <label>
               Location
-              <input type="text" id="eventLocation" placeholder="Enter location (optional)" />
+              <input type="text" id="eventLocation" placeholder="Enter Location (Optional)" />
             </label>
       
             <label>
               Description
-              <textarea id="eventDescription" placeholder="Enter description (optional)"></textarea>
+              <textarea id="eventDescription" placeholder="Enter Description (Optional)"></textarea>
             </label>
       
             <div class="modal-actions">

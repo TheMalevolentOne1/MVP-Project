@@ -297,9 +297,10 @@ app.get('/user/events', async (req, res) => {
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
-    const userId = req.session.userId;
+    const uuid = req.session.userId;
     try {
-        const events = await databaseHandler.getUserEvents(userId);
+        const events = await databaseHandler.getUserEvents(uuid);
+
         // Note: Calendar events are NOT encrypted for MVP simplicity/speed
         return res.json({ success: true, events });
     } catch (error) {
@@ -312,23 +313,20 @@ app.post('/user/events', async (req, res) => {
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
-    const userId = req.session.userId;
-    const { title, start, end, location, description } = req.body;
+    const uuid = req.session.userId;
+    const { title, start, end_time, location, description } = req.body;
 
     // Basic Validation
     if (!title || !start) {
         return res.status(400).json({ success: false, error: 'Title and Start Date are required' });
     }
 
-    try {
-        // Generate a UUID for the event
-        const eventId = crypto.randomUUID();
-        
+    try {        
         // Call DB Handler
-        const result = await databaseHandler.createEvent(userId, eventId, title, start, end, location, description);
+        const result = await databaseHandler.createEvent(uuid, title, start, end_time, location, description);
         
         // Return success with the new Event ID
-        return res.status(201).json({ success: true, eventId: result.eventId });
+        return res.status(201).json({ success: true, id: result.id });
     } catch (error) {
         console.error('Error creating event:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
@@ -339,15 +337,15 @@ app.delete('/user/events/:id', async (req, res) => {
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
-    const userId = req.session.userId;
-    const eventId = req.params.id;
+    const uuid = req.session.userId;
+    const id = req.params.id;
 
-    if (!eventId) {
+    if (!id) {
         return res.status(400).json({ success: false, error: 'Event ID required' });
     }
 
     try {
-        const result = await databaseHandler.deleteEvent(userId, eventId);
+        const result = await databaseHandler.deleteEvent(uuid, id);
         if (result.success) {
             return res.json({ success: true });
         } else {
