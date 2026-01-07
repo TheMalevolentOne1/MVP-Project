@@ -30,8 +30,6 @@ const loadUsername = async () =>
     }
 }
 
-// HELPER FUNCTIONS
-
 /*
 Brief: changeWeek button.
 @Param1: days (Date, number of days)
@@ -100,11 +98,14 @@ const isToday = (date) =>
            date.getFullYear() === today.getFullYear();
 }
 
+/*
+Brief: Open the calendar event model when a table slot is selected
+*/
 const openEventModal = (dateTime) =>
 {
     const modal = document.getElementById('eventModal');
 
-    // Format for datetime-local input
+    // Format for datetime-local input (Database Support)
     const isoString = dateTime.toISOString().slice(0, 16);
     document.getElementById('eventStart').value = isoString;
 
@@ -113,14 +114,20 @@ const openEventModal = (dateTime) =>
     document.getElementById('eventLocation').value = '';
     document.getElementById('eventDescription').value = '';
 
-    modal.classList.remove('hidden');
+    modal.classList.remove('hidden'); // Close Modal
 };
 
+/*
+Brief: Close the calendar event modal
+*/
 const closeEventModal = () =>
 {
     document.getElementById('eventModal').classList.add('hidden');
 };
 
+/*
+Brief: Handle Create Event Form Submission
+*/
 const handleCreateEvent = async () =>
 {
     const title = document.getElementById('eventTitle').value;
@@ -129,7 +136,8 @@ const handleCreateEvent = async () =>
     const location = document.getElementById('eventLocation').value;
     const description = document.getElementById('eventDescription').value;
 
-    try {
+    try 
+    {
         const response = await fetch('/user/events', {
             method: 'POST',
             headers: {
@@ -140,14 +148,17 @@ const handleCreateEvent = async () =>
 
         const data = await response.json();
 
-        if (data.success) {
+        if (data.success) 
+        {
             console.log('Event created with ID:', data.id);
             closeEventModal();
             renderWeek(currentWeekStart); // Refresh calendar
         } else {
             alert('Failed to create event: ' + data.error);
         }
-    } catch (error) {
+    } 
+    catch (error) 
+    {
         console.error('Error creating event:', error);
         alert('Failed to create event');
     }
@@ -169,8 +180,8 @@ const daySelect = (weekStart, dayIndex, hour) =>
         openEventModal(selectedDate);
     };
 
-// Page Content
 
+    // Page Content
 /*
 Brief: Render Calendar for Week of Starting Date
 @Param1: startDate (Int, Monday of relevant week)
@@ -226,6 +237,10 @@ const renderWeek = (startDate) => {
     //renderEvents(weekDates);
 };
 
+/*
+Brief: Fetch events from server
+@Returns: Event List
+*/
 const fetchEvents = async () => 
 {
     try {
@@ -241,7 +256,7 @@ const fetchEvents = async () =>
 // Brief: Get Monday of the week for start.
 let currentWeekStart = getMonday(new Date());
 
-// Brief: Initialization
+// Brief: Runs on content page load.
 document.addEventListener('DOMContentLoaded', () => 
 {
     const eventForm = document.getElementById('eventForm');

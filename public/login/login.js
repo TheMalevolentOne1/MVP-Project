@@ -11,11 +11,14 @@ function showError(msg) {
     box.style.display = 'block';
 }
 
+/*
+Brief: Wait for page to load.
+*/
 document.addEventListener('DOMContentLoaded', function()
 {
     document.getElementById('loginForm').addEventListener('submit', async function(e) 
     {
-        e.preventDefault();
+        e.preventDefault(); // prevent page refresh
         document.getElementById('errorBox').style.display = 'none';
         
         const email = document.getElementById('email').value;
@@ -48,7 +51,7 @@ document.addEventListener('DOMContentLoaded', function()
             }
 
             if (response.ok && data && data.success) {
-                sessionStorage.setItem('userEmail', data.email);
+                sessionStorage.setItem('userEmail', data.email); // Client Email Stored
                 window.location.href = '/dashboard.html';
             } else if (data && data.error) {
                 showError(data.error);

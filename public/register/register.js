@@ -5,13 +5,20 @@ fetch('/auth/whoami')
         if (data.loggedIn) window.location.href = '/dashboard.html';
     });
 
-function showError(msg) 
+/*
+Brief: Display error message in error box.
+@Param1: msg (String, error message)
+*/
+const showError = (msg) => 
 {
     const box = document.getElementById('errorBox');
     box.textContent = msg;
     box.style.display = 'block';
 }
 
+/*
+Brief: Wait for page to load.
+*/
 document.addEventListener('DOMContentLoaded', function()
 {
     document.getElementById('registerForm').addEventListener('submit', async function(e) 
@@ -25,12 +32,14 @@ document.addEventListener('DOMContentLoaded', function()
         const submitBtn = document.querySelector('button[type="submit"]');
         
         // Client-side validation (server will also validate)
-        if (password !== confirmPassword) {
+        if (password !== confirmPassword) 
+        {
             showError('Passwords do not match!');
             return;
         }
         
-        if (password.length < 8) {
+        if (password.length < 8) 
+        {
             showError('Password must be at least 8 characters long');
             return;
         }
@@ -38,7 +47,9 @@ document.addEventListener('DOMContentLoaded', function()
         // Basic email format check
         // Source: https://www.regular-expressions.info/email.html
         const emailRegex = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
-        if (!emailRegex.test(email)) {
+        
+        if (!emailRegex.test(email)) 
+        {
             showError('Please enter a valid email address');
             return;
         }
@@ -47,10 +58,12 @@ document.addEventListener('DOMContentLoaded', function()
         submitBtn.disabled = true;
         submitBtn.textContent = 'Creating account...';
         
-        try {
+        try 
+        {
             const response = await fetch('/auth/register', {
                 method: 'POST',
-                headers: {
+                headers: 
+                {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ email, password })
@@ -58,19 +71,26 @@ document.addEventListener('DOMContentLoaded', function()
             
             const data = await response.json();
 
-            if (data.success) {
+            if (data.success) 
+            {
                 // Store minimal user info for UI purposes
                 sessionStorage.setItem('userEmail', data.email);
                 
                 alert('Account created successfully!');
                 window.location.href = '/dashboard.html';
-            } else {
+            } 
+            else 
+            {
                 showError(data.error || 'Registration failed. Please try again.');
             }
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.error('Registration error:', error);
             showError(`Connection error. Please try again. ${error.message}`);
-        } finally {
+        } 
+        finally 
+        {
             submitBtn.disabled = false;
             submitBtn.textContent = 'Create Account';
         }

@@ -1,20 +1,23 @@
-const databaseHandler = require("../../databaseHandler");
-
 // Track the currently selected note
 let currentNoteTitle = null;
 
 // CommonMark parser and renderer
-const reader = new commonmark.Parser();
+const reader = new commonmark.Parser(); // Commonmark CDN attached in HTML
 const writer = new commonmark.HtmlRenderer({ safe: true });
 
-// Render markdown content to HTML
-function renderMarkdown(markdown) {
+/*
+Brief: Render markdown content to HTML
+@Param1: markdown (String, markdown content)
+*/ 
+const renderMarkdown = (markdown) =>
+{
     const parsed = reader.parse(markdown);
     return writer.render(parsed);
 }
 
 // Toggle between Preview and Live (edit) mode
-function setPreviewMode(isPreview) {
+const setPreviewMode = (isPreview) => 
+{
     const textarea = document.getElementById('noteContent');
     const preview = document.getElementById('notePreview');
     const previewBtn = document.getElementById('previewBtn');
@@ -33,9 +36,11 @@ function setPreviewMode(isPreview) {
     }
 }
 
-// Fetches the current user's info and updates the username display
- 
-async function loadUsername() {
+/*
+Brief: Fetches the current user's info and updates the username display
+*/ 
+const loadUsername = async () =>
+{
     try {
         const response = await fetch('/auth/whoami');
         const data = await response.json();
@@ -54,7 +59,26 @@ async function loadUsername() {
     }
 }
 
-async function populateNotesList()
+/*
+Brief: Logs out the current user
+*/
+const handleLogout = async () =>
+{
+    try {
+        const response = await fetch('/auth/logout', { method: 'POST' });
+        if (response.ok) {
+            window.location.href = './login_page.html';
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout failed');
+    }
+}
+
+/*
+Brief: Fetches and populates the notes list
+*/
+const populateNotesList = async () =>
 {
     try 
     {
@@ -90,9 +114,12 @@ async function populateNotesList()
     }
 }
 
-// Select a note and load its content into the editor
-function selectNote(noteElement) {
-    
+/*
+Brief: Select a note and load its content into the editor
+@Param1: noteElement (HTMLElement, the note button element clicked)
+*/ 
+const selectNote = (noteElement) =>
+{    
     // Remove selection from all notes (Only one button can be selected at a time)
     document.querySelectorAll('.note-item.selected').forEach(el => {
         el.classList.remove('selected');
@@ -109,9 +136,10 @@ function selectNote(noteElement) {
     document.getElementById('noteContent').value = noteElement.dataset.content;
 }
 
-// Delete the currently selected note
-
-async function UpdateNote()
+/*
+Brief: Update the currently selected note
+*/
+const UpdateNote = async () =>
 {
     if (!currentNoteTitle) {
         alert('No note selected. Click on a note first.');
@@ -143,8 +171,12 @@ async function UpdateNote()
         alert('Error updating note');
     }
 }
- 
-async function DeleteNote() {
+
+/*
+Brief: Delete the currently selected note
+*/
+const DeleteNote = async () =>
+{
     if (!currentNoteTitle) {
         alert('No note selected. Click on a note first.');
         return;
@@ -161,7 +193,8 @@ async function DeleteNote() {
         
         const data = await response.json();
         
-        if (data.success) {
+        if (data.success) 
+        {
             // Clear editor
             document.getElementById('noteTitle').value = '';
             document.getElementById('noteContent').value = '';
@@ -178,7 +211,10 @@ async function DeleteNote() {
     }
 }
 
-async function CreateNote()
+/*
+Brief: Create a new note
+*/
+const CreateNote = async () =>
 {
     const title = document.getElementById('noteTitle').value.trim();
     const content = document.getElementById('noteContent').value.trim();
@@ -231,20 +267,16 @@ async function CreateNote()
     }
 }
 
-async function handleLogout() {
-    try {
-        const response = await fetch('/auth/logout', { method: 'POST' });
-        if (response.ok) {
-            window.location.href = './login_page.html';
-        }
-    } catch (error) {
-        console.error('Logout error:', error);
-        alert('Logout failed');
-    }
-}
-
-async function editNoteContent(oldTitle, newTitle, content) {
-    try {
+/*
+Brief: Edit an existing note's title and content
+@Param1: oldTitle (String, current title of the note)
+@Param2: newTitle (String, new title for the note)
+@Param3: content (String, new content for the note)
+*/
+const editNoteContent = async (oldTitle, newTitle, content) => 
+{
+    try 
+    {
         const response = await fetch(`/user/notes/${encodeURIComponent(oldTitle)}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -252,7 +284,9 @@ async function editNoteContent(oldTitle, newTitle, content) {
         });
         const data = await response.json();
         return data;
-    } catch (err) {
+    } 
+    catch (err) 
+    {
         return { success: false, error: err.message };
     }
 }
@@ -284,6 +318,9 @@ async function saveNote()
     }
 }
 
+/*
+Brief: Wait for page to load
+*/
 document.addEventListener('DOMContentLoaded', async () => {
     const userData = await loadUsername();
     
