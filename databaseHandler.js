@@ -55,7 +55,7 @@ async function getUserEmailById(userId)
     return (rows.length > 0) ? rows[0].email : null;
 }
 
-async function CreateNote(uuid, title, content = '') {
+async function createNote(uuid, title, content = '') {
     try {
         await pool.execute(
             'INSERT INTO notes (uuid, title, body) VALUES (?, ?, ?)',
@@ -67,7 +67,7 @@ async function CreateNote(uuid, title, content = '') {
     }
 }
 
-async function EditNoteContent(uuid, oldTitle, newTitle, content) {
+async function editNoteContent(uuid, oldTitle, newTitle, content) {
     try {
         await pool.execute(
             'UPDATE notes SET title = ?, body = ? WHERE uuid = ? AND title = ?',
@@ -79,7 +79,7 @@ async function EditNoteContent(uuid, oldTitle, newTitle, content) {
     }
 }
 
-async function DeleteNote(uuid, title) {
+async function deleteNote(uuid, title) {
     try {
         await pool.execute(
             'DELETE FROM notes WHERE uuid = ? AND title = ?',
@@ -91,7 +91,7 @@ async function DeleteNote(uuid, title) {
     }
 }
 
-async function GetUserNotes(uuid) {
+async function getUserNotes(uuid) {
     try {
         const [rows] = await pool.query(
             'SELECT title, body, created_at, updated_at FROM notes WHERE uuid = ? ORDER BY updated_at DESC',
@@ -103,7 +103,7 @@ async function GetUserNotes(uuid) {
     }
 }
 
-async function GetNoteByTitle(uuid, title) {
+async function getNoteByTitle(uuid, title) {
     try {
         const [rows] = await pool.query(
             'SELECT title, body, created_at, updated_at FROM notes WHERE uuid = ? AND title = ? LIMIT 1',
@@ -184,4 +184,17 @@ async function doesEventExist(uuid, id) {
         return false;
     }
 }
-module.exports = { verifyUserEmail, addNewUser, getUserEmailById, CreateNote, EditNoteContent, DeleteNote, getUserNotes: GetUserNotes, getNoteByTitle: GetNoteByTitle, doesNoteExist, getUserEvents, createEvent, deleteEvent, doesEventExist };
+
+async function deleteAccount(uuid)
+{
+    try {
+        await pool.execute(
+            'DELETE FROM users WHERE uuid = ?',
+            [uuid]
+        );
+    } catch (err) {
+        return false;
+    }
+}
+
+module.exports = { verifyUserEmail, addNewUser, getUserEmailById, createNote, editNoteContent, deleteNote, getUserNotes, getNoteByTitle, doesNoteExist, getUserEvents, createEvent, deleteEvent, doesEventExist, deleteAccount };

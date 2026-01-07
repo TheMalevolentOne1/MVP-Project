@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Assuming a shared stylesheet -->
+</head>
+<body>
+    <div class="dashboard-container">
+        <header class="navbar">
+            <a href="dashboard.html" class="navbar-logo">Dashboard</a>
+            <nav class="navbar-links">
+                <a href="dashboard.html">Dashboard</a>
+                <a href="settings.html" class="active">Settings</a>
+                <a href="profile.html">Profile</a>
+            </nav>
+        </header>
+        <main class="dashboard-main">
+            <section class="settings-section">
+                <h2>Account Settings</h2>
+                <h3>Confirm Account Deletion</h3>
+                <form>
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" name="email" placeholder="Enter your email">
+
+                    <button type="submit">Delete Account</button>
+                </form>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

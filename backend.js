@@ -27,12 +27,12 @@ EVENTS (Calendar):
 require('dotenv').config();
 const { EXPRESS_PORT } = process.env;
 
-const crypto = require('crypto');
-const CryptoJS = require('crypto-js');
-const bcrypt = require('bcrypt');
-const express = require('express');
-const session = require('express-session');
-const databaseHandler = require('./databaseHandler');
+const crypto = require('crypto'); // for UUID generation
+const CryptoJS = require('crypto-js'); // for AES-128 encryption/decryption
+const bcrypt = require('bcrypt'); // for password hashing and comparison
+const express = require('express'); // for backend server
+const session = require('express-session'); // for session/cookie handling
+const databaseHandler = require('./databaseHandler'); // Database backend Handler module 
 
 const app = express();
 app.use(express.json());
@@ -57,10 +57,19 @@ app.use(session({
 
 // AUTH ENDPOINTS
 
+/*
+Brief: Verify Authentication Endpoint is Accessible
+*/
 app.get('/auth', (req, res) => {
     res.json({ message: 'Auth endpoint is working.' });
 });
 
+/*
+Brief: Check if User is Logged In
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON which includes a loggedIn boolean to verify user
+*/
 app.get('/auth/whoami', async (req, res) => {
     // Verify Session
     if (req.session && req.session.userId) {
@@ -72,7 +81,12 @@ app.get('/auth/whoami', async (req, res) => {
     }
 });
 
-// TODO: currently does not work?!
+/*
+Brief: Logout Endpoint - Destroys Session
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message
+*/
 app.post('/auth/logout', (req, res) => {
     req.session.destroy((err) => {
         if (err) {
@@ -83,6 +97,12 @@ app.post('/auth/logout', (req, res) => {
     });
 });
 
+/*
+Brief: Login Endpoint - Verifies Credentials and Creates Session
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message with user info or error
+*/
 app.post('/auth/login', async (req, res) => {
     if (!req.body.length === 0) {
         return res.status(400).json({ success: false, error: 'Request body is empty' });
@@ -101,15 +121,14 @@ app.post('/auth/login', async (req, res) => {
     }
 
     try {
-        // 1. Look up user by email
         const { verify, user } = await databaseHandler.verifyUserEmail(email);
 
-        // 2. Check if user exists
+        // Check if user exists
         if (!verify || !user) {
             return res.status(401).json({ success: false, error: 'Invalid email or password' });
         }
 
-        // 3. Compare password with bcrypt
+        // Compare password with bcrypt
         // First decrypt the stored password hash using UUID as key
         const decryptedPasswordHash = CryptoJS.AES.decrypt(user.password_hash, user.uuid).toString(CryptoJS.enc.Utf8);
         const match = await bcrypt.compare(password, decryptedPasswordHash);
@@ -117,10 +136,10 @@ app.post('/auth/login', async (req, res) => {
             return res.status(401).json({ success: false, error: 'Invalid email or password' });
         }
 
-        // 4. Create session with user uuid
+        // Create session with user uuid
         req.session.userId = user.uuid;
 
-        // 5. Respond with success
+        // Respond with success
         return res.json({ success: true, userId: user.uuid, email: user.email });
     } catch(error) {
         console.error('Login error:', error);
@@ -128,6 +147,12 @@ app.post('/auth/login', async (req, res) => {
     }
 });
 
+/*
+Brief: Register Endpoint - Creates New User and Session
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message with user info or error
+*/
 app.post('/auth/register', async (req, res) => {
     if (!req.body.length === 0) {
         return res.status(400).json({ success: false, error: 'Request body is empty' });
@@ -186,6 +211,12 @@ app.post('/auth/register', async (req, res) => {
 
 // NOTES ENDPOINTS
 
+/*
+Brief: Get All Notes for Logged-in User
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON array of notes with decrypted content
+*/
 app.get('/user/notes', async (req, res) => {
     // Verify Session
     if (!req.session || !req.session.userId) {
@@ -195,7 +226,7 @@ app.get('/user/notes', async (req, res) => {
     try {
         const notes = await databaseHandler.getUserNotes(userId);
         
-        // Decrypt body only (title is stored as plaintext for uniqueness)
+        // Decrypt body only (title is stored as plaintext to maintain Unique names)
         const decryptedNotes = notes.map(note => ({
             title: note.title,
             content: CryptoJS.AES.decrypt(note.body, userId).toString(CryptoJS.enc.Utf8),
@@ -210,6 +241,12 @@ app.get('/user/notes', async (req, res) => {
     }
 });
 
+/*
+Brief: Create New Note for Logged-in User
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message or error
+*/
 app.post('/user/notes', async (req, res) => {
     // Verify Session
     if (!req.session || !req.session.userId)
@@ -242,6 +279,12 @@ app.post('/user/notes', async (req, res) => {
     }
 });
 
+/*
+Brief: Edit Note for Logged-in User
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message or error
+*/
 app.patch('/user/notes/:title', async (req, res) => {
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -274,6 +317,12 @@ app.patch('/user/notes/:title', async (req, res) => {
     }
 });
 
+/*
+Brief: Delete Note for Logged-in User
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message or error
+*/
 app.delete('/user/notes/:title', async (req, res) => {
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -293,6 +342,12 @@ app.delete('/user/notes/:title', async (req, res) => {
 
 // EVENTS ENDPOINTS
 
+/*
+Brief: Get All Events for Logged-in User
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON array of events
+*/
 app.get('/user/events', async (req, res) => {
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -309,6 +364,12 @@ app.get('/user/events', async (req, res) => {
     }
 });
 
+/*
+Brief: Create New Event for Logged-in User
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message with new event ID or error
+*/
 app.post('/user/events', async (req, res) => {
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -325,7 +386,6 @@ app.post('/user/events', async (req, res) => {
         // Call DB Handler
         const result = await databaseHandler.createEvent(uuid, title, start, end_time, location, description);
         
-        // Return success with the new Event ID
         return res.status(201).json({ success: true, id: result.id });
     } catch (error) {
         console.error('Error creating event:', error);
@@ -333,6 +393,12 @@ app.post('/user/events', async (req, res) => {
     }
 });
 
+/*
+Brief: Delete Event for Logged-in User
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message or error
+*/
 app.delete('/user/events/:id', async (req, res) => {
     if (!req.session || !req.session.userId) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
@@ -353,6 +419,40 @@ app.delete('/user/events/:id', async (req, res) => {
         }
     } catch (error) {
         console.error('Error deleting event:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+/*
+Brief: Delete User Account Endpoint
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message or error
+*/
+app.post('/user/del-acc/', async (req, res) => 
+{
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const uuid = req.session.userId;
+
+    try 
+    {
+        await databaseHandler.deleteAccount(uuid);
+
+        // Destroy session after account deletion
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session after account deletion:', err);
+            }
+        });
+
+        return res.json({ success: true, message: 'Account deleted successfully' });
+    }
+    catch (error) 
+    {
+        console.error('Error deleting account:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });
