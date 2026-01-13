@@ -330,8 +330,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     setPreviewMode(false);
 
     // Clear button handler
-    document.querySelector('.clear-btn').addEventListener('click', () => {
-        if (confirm('Clear the note editor?')) {
+    document.querySelector('.clear-btn').addEventListener('click', () =>
+    {
+        if (confirm('Clear the note editor?')) 
+        {
             document.getElementById('noteTitle').value = '';
             document.getElementById('noteContent').value = '';
             currentNoteTitle = null;
@@ -340,16 +342,20 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Save button handler
     const saveBtn = document.getElementById('saveBtn') || document.querySelector('.save-btn');
-    if (saveBtn) {
-        saveBtn.addEventListener('click', (e) => {
+    if (saveBtn) 
+    {
+        saveBtn.addEventListener('click', (e) => 
+        {
             e.preventDefault();
             saveNote();
         });
     }
 
     // Ctrl+S hotkey handler
-    document.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+    document.addEventListener('keydown', function(e) 
+{
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') 
+        {
             e.preventDefault();
             saveNote();
         }
