@@ -118,8 +118,7 @@ const populateNotesList = async () =>
 Brief: Select a note and load its content into the editor
 @Param1: noteElement (HTMLElement, the note button element clicked)
 */ 
-const selectNote = (noteElement) =>
-{    
+const selectNote = (noteElement) => {    
     // Remove selection from all notes (Only one button can be selected at a time)
     document.querySelectorAll('.note-item.selected').forEach(el => {
         el.classList.remove('selected');
@@ -132,10 +131,17 @@ const selectNote = (noteElement) =>
     currentNoteTitle = noteElement.dataset.title;
     
     // Load content into editor
-    document.getElementById('noteTitle').value = noteElement.dataset.title;
-    document.getElementById('noteContent').value = noteElement.dataset.content;
-}
+    const textarea = document.getElementById('noteContent');
+    const preview = document.getElementById('notePreview');
+    textarea.value = noteElement.dataset.content;
 
+    // Update preview if in preview mode
+    if (preview.style.display === 'block') {
+        preview.innerHTML = renderMarkdown(textarea.value);
+    }
+
+    document.getElementById('noteTitle').value = noteElement.dataset.title;
+};
 /*
 Brief: Update the currently selected note
 */
@@ -321,6 +327,38 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Delete note button click handler
     document.querySelector('.delete-btn').addEventListener('click', () => DeleteNote());
+
+    // Download note button click handler
+    document.querySelector('.download-btn').addEventListener('click', () => 
+    {
+        const title = document.getElementById('noteTitle').value.trim();
+        const content = document.getElementById('noteContent').value.trim();
+
+        if (currentNoteTitle || (title && content))
+        {
+            const element = document.createElement('a');
+            const file = new Blob([content], { type: 'text/markdown' });
+            element.href = URL.createObjectURL(file);
+            element.download = `${title || 'note'}.md`;
+            document.body.appendChild(element); // Required for this to work in FireFox
+            element.click();
+            document.body.removeChild(element);
+        }
+
+        if (!title)
+        {
+            alert('Please enter a note title');
+            return;
+        }
+
+        if (!content)
+        {
+            alert('Please enter note content');
+            return;
+        }
+
+    });
+
     
     // Mode toggle buttons
     document.getElementById('previewBtn').addEventListener('click', () => setPreviewMode(true));

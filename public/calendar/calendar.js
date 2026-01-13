@@ -120,7 +120,7 @@ const openEventModal = (dateTime) =>
 /*
 Brief: Close the calendar event modal
 */
-const closeEventModal = () =>
+const closeEventModal = (e) =>
 {
     document.getElementById('eventModal').classList.add('hidden');
 };
@@ -130,20 +130,25 @@ Brief: Handle Create Event Form Submission
 */
 const handleCreateEvent = async () =>
 {
-    const title = document.getElementById('eventTitle').value;
-    const start = document.getElementById('eventStart').value;
-    const end_time = document.getElementById('eventEnd').value;
-    const location = document.getElementById('eventLocation').value;
-    const description = document.getElementById('eventDescription').value;
+    const title = document.getElementById('eventTitle').value.trim();
+    const start = document.getElementById('eventStart').value.trim();
+    const end_time = document.getElementById('eventEnd').value.trim();
+    const location = document.getElementById('eventLocation').value.trim();
+    const description = document.getElementById('eventDescription').value.trim();
+
+    if (!title || !start) {
+        alert('Event title and start time are required.');
+        return;
+    }
 
     try 
     {
         const response = await fetch('/user/events', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ title, start, end_time, location, description })
+            body: JSON.stringify({ title, start, end_time, location, description }),
         });
 
         const data = await response.json();
@@ -160,7 +165,7 @@ const handleCreateEvent = async () =>
     catch (error) 
     {
         console.error('Error creating event:', error);
-        alert('Failed to create event');
+        alert('Error creating event');
     }
 };
 
@@ -268,7 +273,11 @@ document.addEventListener('DOMContentLoaded', () =>
     loadUsername(); // Ensure user is logged in
     renderWeek(currentWeekStart); // Render Current Week
 
-    document.getElementById('cancelEventBtn').onclick = closeEventModal;
+    document.getElementById('cancelEventBtn').onclick = (event) => {
+        event.preventDefault(); // Prevent form submission
+        closeEventModal(); // Close the modal
+    };
+    
     document.getElementById('prevWeekBtn').onclick = () => changeWeek(PREVIOUS_WEEK); 
     document.getElementById('nextWeekBtn').onclick = () => changeWeek(NEXT_WEEK);
 });
