@@ -73,28 +73,92 @@ const renderEvents = async (events) =>
     const existingEvents = grid.querySelectorAll('.event-block');
     existingEvents.forEach(event => event.remove());
 
+    // Get the current week's date range
+    const weekStart = new Date(currentWeekStart);
+    weekStart.setHours(0, 0, 0, 0);
+    const weekEnd = new Date(weekStart);
+    weekEnd.setDate(weekEnd.getDate() + 7);
+    weekEnd.setHours(0, 0, 0, 0);
+
     // Iterate through events and create blocks
     events.forEach(event => {
-        const startHour = new Date(event.start).getHours();
-        const endHour = new Date(event.end_time).getHours();
-        const dayIndex = new Date(event.start).getDay() - 1; // Adjust for Monday start
-
-        for (let hour = startHour; hour <= endHour; hour++) {
-            const slot = grid.querySelector(`.grid-slot[data-day="${dayIndex}"][data-hour="${hour}"]`);
-            if (slot) {
+        const startDate = new Date(event.start);
+        const endDate = new Date(event.end_time);
+        
+        // Check if event is within the current week
+        if (endDate < weekStart || startDate >= weekEnd) {
+            return; // Skip events outside current week
+        }
+        
+        // Check if event spans multiple days
+        const startDay = new Date(startDate.getFullYear(), startDate.getMonth(), startDate.getDate());
+        const endDay = new Date(endDate.getFullYear(), endDate.getMonth(), endDate.getDate());
+        const daysDifference = Math.floor((endDay - startDay) / (1000 * 60 * 60 * 24));
+        
+        // Iterate through each day the event spans
+        for (let dayOffset = 0; dayOffset <= daysDifference; dayOffset++) {
+            const currentDate = new Date(startDay);
+            currentDate.setDate(startDay.getDate() + dayOffset);
+            
+            // Skip if this day is outside the current week
+            if (currentDate < weekStart || currentDate >= weekEnd) {
+                continue;
+            }
+            
+            // Calculate day index relative to the week start (Monday)
+            const daysSinceMonday = Math.floor((currentDate - weekStart) / (1000 * 60 * 60 * 24));
+            const dayIndex = daysSinceMonday; // 0 = Monday, 6 = Sunday
+            
+            // Determine hour range for this specific day
+            let hourStart, hourEnd;
+            if (dayOffset === 0) {
+                // First day: start at event start hour
+                hourStart = startDate.getHours();
+                hourEnd = (daysDifference === 0) ? endDate.getHours() : 23;
+            } else if (dayOffset === daysDifference) {
+                // Last day: end at event end hour
+                hourStart = 0;
+                hourEnd = endDate.getHours();
+            } else {
+                // Middle days: full 24 hours
+                hourStart = 0;
+                hourEnd = 23;
+            }
+            
+            // Create blocks for each hour on this day
+            for (let hour = hourStart; hour <= hourEnd; hour++) {
+                const slot = grid.querySelector(`.grid-slot[data-day="${dayIndex}"][data-hour="${hour}"]`);
+                if (slot) {
                 const eventBlock = document.createElement('div');
                 eventBlock.classList.add('event-block');
-                eventBlock.innerText = event.title;
+                
+                // Format start and end times
+                const startTime = new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                const endTime = new Date(event.end_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                
+                // Event content
+                let eventContent = `${startTime} - ${endTime} | ${event.title}`;
+                if (event.description) {
+                    eventContent += `\n${event.description}`;
+                }
+                if (event.location) {
+                    eventContent += `\n${event.location}`;
+                }
+                
+                eventBlock.innerText = eventContent;
 
                 const deleteButton = document.createElement('button');
                 deleteButton.classList.add('delete-event-btn');
                 deleteButton.innerText = 'X';
-                deleteButton.onclick = (e) => {
+                deleteButton.onclick = (e) => 
+                {
                     deleteEvent(event.id);
+                    e.stopPropagation(); // Prevent triggering slot click
                 };
                 eventBlock.appendChild(deleteButton);
 
                 slot.appendChild(eventBlock);
+                }
             }
         }
     });
@@ -356,6 +420,52 @@ const fetchAndPopulateEvents = async () => {
     } catch (error) {
         console.error('Error fetching events:', error);
     }
+};
+
+/*
+Brief: Extract timetable from ULAN (University TimeTable System (Web Scraper))
+*/
+const extractTimeTable = async () => {
+    // Prompt for university email
+    const uniEmail = prompt('Enter your University Email:');
+    if (!uniEmail) {
+        alert('Email is required to extract timetable.');
+        return;
+    }
+
+    // Prompt for password
+    const uniPassword = prompt('Enter your University Password:');
+    if (!uniPassword) {
+        alert('Password is required to extract timetable.');
+        return;
+    }
+
+    // Get current week's Monday
+    const monday = getMonday(new Date());
+    const weekEnd = new Date(monday);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+
+    // Format dates for confirmation
+    const opts = { month: 'short', day: 'numeric', year: 'numeric' };
+    const mondayStr = monday.toLocaleDateString('en-US', opts);
+    const sundayStr = weekEnd.toLocaleDateString('en-US', opts);
+
+    // Confirm extraction
+    const confirmed = confirm(
+        `Extract timetable for the week:\n${mondayStr} - ${sundayStr}\n\nProceed with extraction?`
+    );
+
+    if (!confirmed) {
+        return;
+    }
+
+    /* TODO: Implement ULAN timetable extraction logic
+     1. Fetch timetable data for the specified week
+     2. Parse and convert to calendar events
+     3. Insert events into the database
+     4. Refresh Calendar Page */
+
+    alert('Timetable extraction not yet implemented.\n\nEmail: ' + uniEmail + '\nWeek: ' + mondayStr + ' - ' + sundayStr); // Temporary alert
 };
 
 // Brief: Get Monday of the week for start.
