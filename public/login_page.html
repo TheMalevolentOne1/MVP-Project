@@ -9,28 +9,27 @@
     <body class="auth-page">
         <div class="login-div-container">
             <h1>Login to ASC</h1>
+
             <div id="errorBox" class="error-box" style="display:none;"></div>
-            <form id="loginForm">
+
+            <form id="loginForm" onsubmit="event.preventDefault(); login();">
+
                 <div class="form-group">
                     <label for="email">Email</label>
                     <input type="email" id="email" name="email" required placeholder="your@email.com" />
                 </div>
+
                 <div class="form-group">
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" placeholder="Password..." required />
                 </div>
+
                 <button type="submit">Login</button>
             </form>
+            
             <p class="signup-link">Don't have an account? <a href="./registration_page.html">Sign up</a></p>
         </div>
+        
         <script src="./login/login.js"></script>
-        <script>
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Enter') {
-                    event.preventDefault(); // Prevent default Enter behavior
-                    document.getElementById('loginForm').submit(); // Submit the form
-                }
-            });
-        </script>
     </body>
 </html>

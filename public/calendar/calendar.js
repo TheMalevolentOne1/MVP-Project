@@ -141,6 +141,11 @@ const handleCreateEvent = async () =>
         return;
     }
 
+    if (!end_time)
+    {
+        end_time = start;
+    }
+
     try 
     {
         const response = await fetch('/user/events', {
@@ -273,8 +278,9 @@ document.addEventListener('DOMContentLoaded', () =>
     loadUsername(); // Ensure user is logged in
     renderWeek(currentWeekStart); // Render Current Week
 
-    document.getElementById('cancelEventBtn').onclick = (event) => {
-        event.preventDefault(); // Prevent form submission
+    document.getElementById('cancelEventBtn').onclick = (e) =>
+    {
+        e.preventDefault(); // Prevent form submission
         closeEventModal(); // Close the modal
     };
     
