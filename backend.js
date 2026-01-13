@@ -44,12 +44,12 @@ Source: https://www.youtube.com/watch?v=OH6Z0dJ_Huk
 My familiarity with express-session was limited.
 */
 app.use(session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET, // "THE-SECRET-KEY-IS-A-SECRET" (Temporarily put here as a placeholder while dev)
     resave: false,
     saveUninitialized: false,
     cookie: { 
         httpOnly: true,
-        sameSite: 'lax',
+        sameSite: 'lax', // Same-Site Origin
         secure: false, // Not using SSL.
         maxAge: 24 * 60 * 60 * 1000 // 24 hours expiry date.
     }
