@@ -132,7 +132,7 @@ const handleCreateEvent = async () =>
 {
     const title = document.getElementById('eventTitle').value.trim();
     const start = document.getElementById('eventStart').value.trim();
-    const end_time = document.getElementById('eventEnd').value.trim();
+    var end_time = document.getElementById('eventEnd').value.trim();
     const location = document.getElementById('eventLocation').value.trim();
     const description = document.getElementById('eventDescription').value.trim();
 
@@ -161,6 +161,7 @@ const handleCreateEvent = async () =>
         if (data.success) 
         {
             console.log('Event created with ID:', data.id);
+            alert('Event Created'); // Notify user of successful creation
             closeEventModal();
             renderWeek(currentWeekStart); // Refresh calendar
         } else {
