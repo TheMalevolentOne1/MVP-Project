@@ -697,6 +697,7 @@ body.auth-page {
     min-height: 280px;
     color: #333;
     font-size: 1rem;
+    text-align: left;
 }
 
 /* ========== APP PAGE STYLES (Dashboard, Calendar) ========== */

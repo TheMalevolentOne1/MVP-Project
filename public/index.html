@@ -5,7 +5,27 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="styles.css" />
+
+        <script type="text/javascript">
+            // Redirect to dashboard if already logged in
+            window.addEventListener('DOMContentLoaded', async () => 
+            {
+                try 
+                {
+                    const res = await fetch('/auth/whoami');
+                    const data = await res.json();
+                    if (data.loggedIn) {
+                        window.location.href = './dashboard.html';
+                    }
+                } 
+                catch (e) 
+                {
+                    console.log("Server Error. Unable to verify login status.");
+                }
+            });
+        </script>
     </head>
+    
     <body class="landing-page">
         <header class="notes-header">
             <button class="logo-btn" onclick="window.location = 'index.html'">Logo</button>

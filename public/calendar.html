@@ -13,12 +13,8 @@
                 <button class="logo-btn" onclick="window.location = 'index.html'">ASC</button>
             </div>
 
-            <nav class="app-nav">
-                <a href="dashboard.html" class="nav-link">Dashboard</a>
-                <a href="notes.html" class="nav-link">Notes</a>
-                <a href="calendar.html" class="nav-link active">Calendar</a>
-                <a href="#" onclick="handleLogout()" class="nav-link">Logout</a>
-            </nav>
+            <!-- Include shared navbar -->
+            <div w3-include-html="shared/navbar.html"></div>
 
             <div class="user-profile">
                 <span id="username">Loading...</span>
