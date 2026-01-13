@@ -31,6 +31,76 @@ const loadUsername = async () =>
 }
 
 /*
+Brief: Delete an event by ID
+@Param1: eventId (Number, ID of event to delete)
+*/
+const deleteEvent = async (eventId) => 
+{
+    if (!confirm('Delete this event?')) {
+        return;
+    }
+
+    try 
+    {
+        const response = await fetch(`/user/events/${eventId}`, {
+            method: 'DELETE'
+        });
+
+        const data = await response.json();
+
+        if (data.success) 
+        {
+            console.log('Event deleted:', eventId);
+            fetchAndPopulateEvents(); // Refresh calendar
+        } 
+        else 
+        {
+            alert('Failed to delete event: ' + data.error);
+        }
+    } 
+    catch (error) 
+    {
+        console.error('Error deleting event:', error);
+        alert('Error deleting event');
+    }
+};
+
+const renderEvents = async (events) =>
+{
+    const grid = document.getElementById('calendarGrid');
+
+    // Clear previous events
+    const existingEvents = grid.querySelectorAll('.event-block');
+    existingEvents.forEach(event => event.remove());
+
+    // Iterate through events and create blocks
+    events.forEach(event => {
+        const startHour = new Date(event.start).getHours();
+        const endHour = new Date(event.end_time).getHours();
+        const dayIndex = new Date(event.start).getDay() - 1; // Adjust for Monday start
+
+        for (let hour = startHour; hour <= endHour; hour++) {
+            const slot = grid.querySelector(`.grid-slot[data-day="${dayIndex}"][data-hour="${hour}"]`);
+            if (slot) {
+                const eventBlock = document.createElement('div');
+                eventBlock.classList.add('event-block');
+                eventBlock.innerText = event.title;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-event-btn');
+                deleteButton.innerText = 'X';
+                deleteButton.onclick = (e) => {
+                    deleteEvent(event.id);
+                };
+                eventBlock.appendChild(deleteButton);
+
+                slot.appendChild(eventBlock);
+            }
+        }
+    });
+}
+
+/*
 Brief: changeWeek button.
 @Param1: days (Date, number of days)
 */
@@ -38,6 +108,7 @@ const changeWeek = (days) =>
 {
     currentWeekStart.setDate(currentWeekStart.getDate() + days);
     renderWeek(currentWeekStart);
+    fetchAndPopulateEvents(); // Fetch and render events for the new week
 }
 
 /*
@@ -164,6 +235,7 @@ const handleCreateEvent = async () =>
             alert('Event Created'); // Notify user of successful creation
             closeEventModal();
             renderWeek(currentWeekStart); // Refresh calendar
+            fetchAndPopulateEvents(); // Fetch and render updated events
         } else {
             alert('Failed to create event: ' + data.error);
         }
@@ -264,6 +336,28 @@ const fetchEvents = async () =>
     }
 };
 
+/*
+Brief: Fetch events from the API and populate the calendar grid.
+*/
+const fetchAndPopulateEvents = async () => {
+    try {
+        // Fetch events from the server
+        const response = await fetch('/user/events');
+        const data = await response.json();
+
+        if (data.success) {
+            const events = data.events;
+
+            // Populate the calendar grid with fetched events
+            renderEvents(events);
+        } else {
+            console.error('Failed to fetch events:', data.error);
+        }
+    } catch (error) {
+        console.error('Error fetching events:', error);
+    }
+};
+
 // Brief: Get Monday of the week for start.
 let currentWeekStart = getMonday(new Date());
 
@@ -278,6 +372,7 @@ document.addEventListener('DOMContentLoaded', () =>
 
     loadUsername(); // Ensure user is logged in
     renderWeek(currentWeekStart); // Render Current Week
+    fetchAndPopulateEvents(); // Fetch and render events
 
     document.getElementById('cancelEventBtn').onclick = (e) =>
     {

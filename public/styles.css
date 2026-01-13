@@ -995,3 +995,41 @@ body.auth-page {
     font-size: 1rem;
     line-height: 1;
 }
+
+/* Event block styles */
+.event-block {
+    position: relative;
+    background: #2a7ae2;
+    color: white;
+    padding: 4px 6px;
+    margin: 2px;
+    border-radius: 3px;
+    font-size: 0.75rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.delete-event-btn {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 0.7rem;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.delete-event-btn:hover {
+    background: rgba(255, 0, 0, 0.7);
+}
