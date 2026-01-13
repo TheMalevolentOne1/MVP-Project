@@ -147,6 +147,16 @@ const renderEvents = async (events) =>
                 
                 eventBlock.innerText = eventContent;
 
+                const editButton = document.createElement('button');
+                editButton.classList.add('edit-event-btn');
+                editButton.innerText = '✎';
+                editButton.onclick = (e) =>
+                {
+                    e.preventDefault();
+                    alert("TODO: EDIT EVENT FEATURE"); // Use same modal as before but pre-fill fields with event data
+                    e.stopPropagation(); // Prevent triggering slot click
+                }
+
                 const deleteButton = document.createElement('button');
                 deleteButton.classList.add('delete-event-btn');
                 deleteButton.innerText = 'X';
