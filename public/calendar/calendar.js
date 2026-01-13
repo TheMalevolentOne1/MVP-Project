@@ -328,7 +328,8 @@ const daySelect = (weekStart, dayIndex, hour) =>
     };
 
 
-    // Page Content
+// Page Content
+
 /*
 Brief: Render Calendar for Week of Starting Date
 @Param1: startDate (Int, Monday of relevant week)
