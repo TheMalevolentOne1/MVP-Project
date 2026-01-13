@@ -1,0 +1,8 @@
+# MVP Project Environment Variables
+DB_HOST=localhost
+DB_USER=server_user
+DB_PASSWORD=user123
+DB_NAME=mvp_database
+DB_PORT=3306
+SESSION_SECRET="THE-SECRET-KEY-IS-A-SECRET"
+EXPRESS_PORT=3000
