@@ -267,7 +267,7 @@ app.post('/user/notes', async (req, res) => {
         // Encrypt body only with AES (title stored plaintext for uniqueness)
         const encryptedContent = CryptoJS.AES.encrypt(content || '', userId).toString();
         
-        await databaseHandler.CreateNote(userId, truncatedTitle, encryptedContent);
+        await databaseHandler.createNote(userId, truncatedTitle, encryptedContent);
         return res.status(201).json({ success: true });
     } catch (error) {
         // Handle duplicate title error (MySQL error 1062)
@@ -275,6 +275,30 @@ app.post('/user/notes', async (req, res) => {
             return res.status(409).json({ success: false, error: 'No duplicates allowed' });
         }
         console.error('Error creating note:', error.message);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+// Brief: Get a single note by Title for Logged-in User
+// @Param1: req - HTTP Request Object
+// @Param2: res - HTTP Response Object
+// @Return: JSON object with note data or error
+app.get('/user/notes/:title', async (req, res) => {
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    const userId = req.session.userId;
+    const title = decodeURIComponent(req.params.title);
+    try {
+        const note = await databaseHandler.getNoteByTitle(userId, title);
+        if (!note) {
+            return res.status(404).json({ success: false, error: 'Note not found' });
+        }
+        // Decrypt content
+        const content = CryptoJS.AES.decrypt(note.body, userId).toString(CryptoJS.enc.Utf8);
+        return res.json({ success: true, note: { title: note.title, content, created_at: note.created_at, updated_at: note.updated_at } });
+    } catch (error) {
+        console.error('Error fetching note:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });
@@ -305,7 +329,7 @@ app.patch('/user/notes/:title', async (req, res) => {
         // Encrypt content with AES
         const encryptedContent = CryptoJS.AES.encrypt(content || '', userId).toString();
 
-        await databaseHandler.EditNoteContent(userId, oldTitle, truncatedNewTitle, encryptedContent);
+        await databaseHandler.editNoteContent(userId, oldTitle, truncatedNewTitle, encryptedContent);
         return res.json({ success: true });
     } catch (error) {
         // Handle duplicate title error (MySQL error 1062)
@@ -332,7 +356,7 @@ app.delete('/user/notes/:title', async (req, res) => {
     const title = decodeURIComponent(req.params.title);
     
     try {
-        await databaseHandler.DeleteNote(userId, title);
+        await databaseHandler.deleteNote(userId, title);
         return res.json({ success: true });
     } catch (error) {
         console.error('Error deleting note:', error);
@@ -378,8 +402,11 @@ app.post('/user/events', async (req, res) => {
     const { title, start, end_time, location, description } = req.body;
 
     // Basic Validation
-    if (!title || !start) {
-        return res.status(400).json({ success: false, error: 'Title and Start Date are required' });
+    if (!title || !start) 
+    {
+        if (!end_time) { end_time = start; } // If no end_time provided, set it to start time
+        
+        return res.status(400).json({ success: false, error: 'Title, Start Date, and End Time are required' });
     }
 
     try {        

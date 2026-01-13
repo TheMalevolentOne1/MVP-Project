@@ -268,49 +268,38 @@ const CreateNote = async () =>
 }
 
 /*
-Brief: Edit an existing note's title and content
-@Param1: oldTitle (String, current title of the note)
-@Param2: newTitle (String, new title for the note)
-@Param3: content (String, new content for the note)
+Brief: Save the current note (create or update)
 */
-const editNoteContent = async (oldTitle, newTitle, content) => 
-{
-    try 
-    {
-        const response = await fetch(`/user/notes/${encodeURIComponent(oldTitle)}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ newTitle, content })
-        });
-        const data = await response.json();
-        return data;
-    } 
-    catch (err) 
-    {
-        return { success: false, error: err.message };
-    }
-}
-
 async function saveNote() 
 {
-    if (!currentNoteTitle && databaseHandler.getUserNotes().length >= 1)
+    const title = document.getElementById('noteTitle').value.trim();
+    const content = document.getElementById('noteContent').value.trim();
+
+    if (!title) 
     {
-        alert('No note selected. Click on a note first.');
+        alert('Please enter a note title');
+        return;
+    }
+    if (!content) 
+    {
+        alert('Please enter note content');
         return;
     }
 
-    const newTitle = document.getElementById('noteTitle').value.trim();
-    const content = document.getElementById('noteContent').value.trim();
-    
+    // Only update an existing note; do not create new notes
+    if (!currentNoteTitle) {
+        alert('No note selected. Click on a note first.');
+        return;
+    }
+    // Update note
     const response = await fetch(`/user/notes/${encodeURIComponent(currentNoteTitle)}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ newTitle, content })
+        body: JSON.stringify({ newTitle: title, content })
     });
-    
     const data = await response.json();
     if (data.success) {
-        currentNoteTitle = newTitle;
+        currentNoteTitle = title;
         await populateNotesList();
         alert('Note saved!');
     } else {
@@ -350,19 +339,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Save button handler
-    document.querySelector('.save-btn').addEventListener('click', () => saveNote());
+    const saveBtn = document.getElementById('saveBtn') || document.querySelector('.save-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            saveNote();
+        });
+    }
+
+    // Ctrl+S hotkey handler
+    document.addEventListener('keydown', function(e) {
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
+            e.preventDefault();
+            saveNote();
+        }
+    });
 });
 
-// Save note hotkey: Ctrl+S
-window.addEventListener('keydown', function(e) 
-{
-    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') 
-    {
-        e.preventDefault();
-        if (currentNoteTitle) {
-            if (confirm("Do you want to save changes to the current note?")) saveNote();
-        } else if (confirm('Create new note?')) {
-            CreateNote();
-        }
-    }
-});
