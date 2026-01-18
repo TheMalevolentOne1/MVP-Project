@@ -56,8 +56,6 @@ Brief: Add a new user to the database
 @Return: Boolean
 @ReturnT: User added successfully
 @ReturnF: Failed to add user
-
-@Note: Also creates a default note for the user from user_instructions file
 */
 const addNewUser = async (uuid, email, passwordHash) => 
 {
@@ -67,27 +65,6 @@ const addNewUser = async (uuid, email, passwordHash) =>
             'INSERT INTO users (uuid, email, password_hash) VALUES (?, ?, ?)',
             [uuid, email, passwordHash]
         );
-
-        // Read user_instructions file content
-        const instructionsPath = path.join(__dirname, 'user_instructions');
-        let instructionsContent = '';
-
-        try {
-            instructionsContent = fs.readFileSync(instructionsPath, 'utf8');
-        } catch (err) {
-            console.error('Failed to read user_instructions:', err);
-        }
-
-        // Add default instructions note for the new user
-        if (instructionsContent) 
-        {
-            try 
-            {
-                await createNote(uuid, 'How to Use!', instructionsContent);
-            } catch (err) {
-                console.error('Failed to create default user note:', err);
-            }
-        }
 
         return true;
     } 

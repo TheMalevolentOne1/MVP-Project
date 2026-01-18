@@ -28,16 +28,3 @@ Create bullet lists using dashes, pluses, or asterisks:
 
 ## Code
 Inline code: `code here`
-
-Code block:
-```
-```
-Your code here
-```
-```
-
-## Links
-Create links using square brackets and parentheses:
-```
-[Link text](https://example.com)
-```

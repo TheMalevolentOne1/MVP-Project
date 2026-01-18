@@ -35,6 +35,8 @@ const CryptoJS = require('crypto-js'); // for AES-128 encryption/decryption
 const bcrypt = require('bcrypt'); // for password hashing and comparison
 const express = require('express'); // for backend server
 const session = require('express-session'); // for session/cookie handling
+const fs = require('fs'); // for reading user_instructions
+const path = require('path'); // for path joining
 const databaseHandler = require('./databaseHandler'); // Database backend Handler module 
 
 const app = express();
@@ -43,6 +45,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
 /* 
+Brief: Express Session Middleware
+
 Source: https://www.youtube.com/watch?v=OH6Z0dJ_Huk 
 My familiarity with express-session was limited.
 */
@@ -62,6 +66,12 @@ app.use(session({
 
 /*
 Brief: Verify Authentication Endpoint is Accessible
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+
+@Return: JSON
+@ReturnT: Auth endpoint is working
+@ReturnF: N/A
 */
 app.get('/auth', (req, res) => {
     res.json({ message: 'Auth endpoint is working.' });
@@ -71,7 +81,10 @@ app.get('/auth', (req, res) => {
 Brief: Check if User is Logged In
 @Param1: req - HTTP Request Object
 @Param2: res - HTTP Response Object
-@Return: JSON which includes a loggedIn boolean to verify user
+
+@Return: JSON
+@ReturnT: loggedIn true with userId and email
+@ReturnF: loggedIn false
 */
 app.get('/auth/whoami', async (req, res) => {
     // Verify Session
@@ -88,7 +101,10 @@ app.get('/auth/whoami', async (req, res) => {
 Brief: Logout Endpoint - Destroys Session
 @Param1: req - HTTP Request Object
 @Param2: res - HTTP Response Object
-@Return: JSON success message
+
+@Return: JSON
+@ReturnT: Logout successful
+@ReturnF: Logout failed
 */
 app.post('/auth/logout', (req, res) => {
     req.session.destroy((err) => {
@@ -104,7 +120,10 @@ app.post('/auth/logout', (req, res) => {
 Brief: Login Endpoint - Verifies Credentials and Creates Session
 @Param1: req - HTTP Request Object
 @Param2: res - HTTP Response Object
-@Return: JSON success message with user info or error
+
+@Return: JSON
+@ReturnT: Login successful with userId and email
+@ReturnF: Login failed with error message
 */
 app.post('/auth/login', async (req, res) => {
     if (!req.body.length === 0) {
@@ -154,7 +173,10 @@ app.post('/auth/login', async (req, res) => {
 Brief: Register Endpoint - Creates New User and Session
 @Param1: req - HTTP Request Object
 @Param2: res - HTTP Response Object
-@Return: JSON success message with user info or error
+
+@Return: JSON
+@ReturnT: User created successfully with user info
+@ReturnF: Error message
 */
 app.post('/auth/register', async (req, res) => {
     if (!req.body.length === 0) {
@@ -196,6 +218,17 @@ app.post('/auth/register', async (req, res) => {
             return res.status(500).json({ success: false, error: 'Failed to create user' });
         }
 
+        // Create default "How to Use!" note
+        try {
+            const instructionsPath = path.join(__dirname, 'user_instructions');
+            const instructionsContent = fs.readFileSync(instructionsPath, 'utf8');
+            const encryptedContent = CryptoJS.AES.encrypt(instructionsContent, userId).toString();
+            await databaseHandler.createNote(userId, 'How to Use!', encryptedContent);
+        } catch (err) {
+            console.error('Failed to create default user note:', err);
+            // Don't fail registration if note creation fails
+        }
+
         // Create session
         req.session.userId = userId;
 
@@ -230,12 +263,21 @@ app.get('/user/notes', async (req, res) => {
         const notes = await databaseHandler.getUserNotes(userId);
         
         // Decrypt body only (title is stored as plaintext to maintain Unique names)
-        const decryptedNotes = notes.map(note => ({
-            title: note.title,
-            content: CryptoJS.AES.decrypt(note.body, userId).toString(CryptoJS.enc.Utf8),
-            created_at: note.created_at,
-            updated_at: note.updated_at
-        }));
+        const decryptedNotes = notes.map(note => {
+            let decryptedContent = '';
+            try {
+                decryptedContent = CryptoJS.AES.decrypt(note.body, userId).toString(CryptoJS.enc.Utf8);
+            } catch (error) {
+                console.error('Error decrypting note:', error);
+                decryptedContent = 'Error: Unable to decrypt note content';
+            }
+            return {
+                title: note.title,
+                content: decryptedContent,
+                created_at: note.created_at,
+                updated_at: note.updated_at
+            };
+        });
         
         return res.json({ success: true, notes: decryptedNotes });
     } catch (error) {
@@ -268,7 +310,7 @@ app.post('/user/notes', async (req, res) => {
 
     try {
         // Encrypt body only with AES (title stored plaintext for uniqueness)
-        const encryptedContent = CryptoJS.AES.encrypt(content || '', userId).toString();
+        const encryptedContent = CryptoJS.AES.encrypt(content, userId).toString();
         
         await databaseHandler.createNote(userId, truncatedTitle, encryptedContent);
         return res.status(201).json({ success: true });
@@ -313,7 +355,8 @@ Brief: Edit Note for Logged-in User
 @Return: JSON success message or error
 */
 app.patch('/user/notes/:title', async (req, res) => {
-    if (!req.session || !req.session.userId) {
+    if (!req.session || !req.session.userId) 
+    {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
@@ -321,7 +364,8 @@ app.patch('/user/notes/:title', async (req, res) => {
     const oldTitle = decodeURIComponent(req.params.title);
     const { newTitle, content } = req.body;
 
-    if (!newTitle) {
+    if (!newTitle)
+    {
         return res.status(400).json({ success: false, error: 'New title is required' });
     }
 
