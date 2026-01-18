@@ -1,3 +1,15 @@
+/*
+TODO:
+- Edit Existing Events
+- ULAN Timetable Extraction
+- Improve Event Calendar Rendering (Continous Blocks)
+- Notifications for:
+  - Upcoming Events
+  - Overlapping Events Warning
+  - Recurring Events Support (Reoccuring Per Week/Month Toggle)
+  - 
+*/
+
 // CONSTANTS
 const PREVIOUS_WEEK = -7;
 const NEXT_WEEK = 7;
@@ -65,6 +77,10 @@ const deleteEvent = async (eventId) =>
     }
 };
 
+/*
+Brief: Render events onto the calendar grid
+@Param1: events (Array, List of event objects from database)
+*/
 const renderEvents = async (events) =>
 {
     const grid = document.getElementById('calendarGrid');
@@ -111,15 +127,20 @@ const renderEvents = async (events) =>
             
             // Determine hour range for this specific day
             let hourStart, hourEnd;
-            if (dayOffset === 0) {
+            if (dayOffset === 0) 
+            {
                 // First day: start at event start hour
                 hourStart = startDate.getHours();
                 hourEnd = (daysDifference === 0) ? endDate.getHours() : 23;
-            } else if (dayOffset === daysDifference) {
+            } 
+            else if (dayOffset === daysDifference) 
+            {
                 // Last day: end at event end hour
                 hourStart = 0;
                 hourEnd = endDate.getHours();
-            } else {
+            } 
+            else
+            {
                 // Middle days: full 24 hours
                 hourStart = 0;
                 hourEnd = 23;
@@ -163,7 +184,7 @@ const renderEvents = async (events) =>
                 deleteButton.onclick = (e) => 
                 {
                     deleteEvent(event.id);
-                    e.stopPropagation(); // Prevent triggering slot click
+                    e.stopPropagation();
                 };
                 eventBlock.appendChild(deleteButton);
 
@@ -462,9 +483,7 @@ const extractTimeTable = async () => {
     const sundayStr = weekEnd.toLocaleDateString('en-US', opts);
 
     // Confirm extraction
-    const confirmed = confirm(
-        `Extract timetable for the week:\n${mondayStr} - ${sundayStr}\n\nProceed with extraction?`
-    );
+    const confirmed = confirm(`Extract timetable for the week:\n${mondayStr} - ${sundayStr}\n\nProceed with extraction?`);
 
     if (!confirmed) {
         return;
@@ -501,6 +520,7 @@ document.addEventListener('DOMContentLoaded', () =>
         closeEventModal(); // Close the modal
     };
     
+    // Week Buttons
     document.getElementById('prevWeekBtn').onclick = () => changeWeek(PREVIOUS_WEEK); 
     document.getElementById('nextWeekBtn').onclick = () => changeWeek(NEXT_WEEK);
 });

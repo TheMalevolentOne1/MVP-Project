@@ -5,13 +5,21 @@ fetch('/auth/whoami')
         if (data.loggedIn) window.location.href = '/dashboard.html';
     });
 
-function showError(msg) {
+/*
+Brief: Show error message
+@Param1 msg (String, Error message to display)
+*/
+const showError = (msg) =>
+{
     const box = document.getElementById('errorBox');
     box.textContent = msg;
     box.style.display = 'block';
 }
 
-function login() 
+/*
+Brief: Asynchronous Login API Call
+*/
+const login = async () => 
 {
     const email = document.getElementById('email').value;
     const password = document.getElementById('password').value;
@@ -23,7 +31,7 @@ function login()
     submitBtn.disabled = true;
     submitBtn.textContent = 'Logging in...';
 
-    fetch('/auth/login', {
+    await fetch('/auth/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
@@ -75,6 +83,7 @@ function login()
 
 /*
 Brief: Wait for page to load.
+@Param1 function (Function, Function to execute on load)
 */
 document.addEventListener('DOMContentLoaded', function()
 {

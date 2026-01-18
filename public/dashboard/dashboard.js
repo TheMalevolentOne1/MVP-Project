@@ -1,4 +1,18 @@
 /*
+TODO: (Dashboard Features)
+- List of most recent notes (Clickable to open specific note)
+- List of upcoming events (Clickable to open calendar at specific date)
+
+(POST MVP)
+- Quick links to common actions (Create Note, Create Event, Delete Calendar Event)
+  - Create Note (New Note Page)
+  - Create Event (Open Calendar Page and Calendar Modal for event data)
+  - Delete Calendar Event (Open Calendar Page and select event to delete)
+  - Visualisation of activity data (use dates from database and chart.js to generate activity graph
+  - 
+*/
+
+/*
 Brief: WhoAmI (Authentication Endpoint, Verifies Login)
 */
 const loadUsername = async () => 
