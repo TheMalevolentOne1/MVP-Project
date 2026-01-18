@@ -15,7 +15,10 @@ const renderMarkdown = (markdown) =>
     return writer.render(parsed);
 }
 
-// Toggle between Preview and Live (edit) mode
+/*
+Brief: Set preview or edit mode
+@Param1: isPreview (Boolean, true for preview mode, false for edit mode)
+*/
 const setPreviewMode = (isPreview) => 
 {
     const textarea = document.getElementById('noteContent');
@@ -118,7 +121,8 @@ const populateNotesList = async () =>
 Brief: Select a note and load its content into the editor
 @Param1: noteElement (HTMLElement, the note button element clicked)
 */ 
-const selectNote = (noteElement) => {    
+const selectNote = (noteElement) => 
+{    
     // Remove selection from all notes (Only one button can be selected at a time)
     document.querySelectorAll('.note-item.selected').forEach(el => {
         el.classList.remove('selected');
@@ -276,7 +280,7 @@ const CreateNote = async () =>
 /*
 Brief: Save the current note (create or update)
 */
-async function saveNote() 
+const saveNote = async () => 
 {
     const title = document.getElementById('noteTitle').value.trim();
     const content = document.getElementById('noteContent').value.trim();
@@ -315,6 +319,7 @@ async function saveNote()
 
 /*
 Brief: Wait for page to load
+@Param1 function (Function, Function to execute on load)
 */
 document.addEventListener('DOMContentLoaded', async () => {
     const userData = await loadUsername();

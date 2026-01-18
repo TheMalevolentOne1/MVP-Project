@@ -8,16 +8,19 @@ AUTH:
   POST /auth/login     → Verify password, set session ✔️
   POST /auth/logout    → Destroy session ✔️
   GET  /auth/whoami        → Check if logged in, return user email ✔️
+  POST /auth/del-acc   → Delete user account, destroy session ✔️
 
 NOTES:
   GET    /user/notes        → List all notes for logged-in user ✔️
   GET    /user/notes/:title    → Get single note by Title ✔️
+  GET    /user/notes/recent/  → Get last updated notes (last 7 days) ❌
   POST   /user/notes        → Create new note ✔️
   PATCH  /user/notes/:title    → Update note title/body ✔️
   DELETE /user/notes/:title    → Delete note ✔️
 
 EVENTS (Calendar):
   GET    /user/events       → List all events for user ✔️
+  GET    /user/events/upcoming   → Get all upcoming events (future dates) ❌
   POST   /user/events       → Create event (or import from ICS (when implemented)) ✔️
   DELETE /user/events/:id   → Delete event by ID ✔️
 

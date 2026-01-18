@@ -1,0 +1,43 @@
+# How to Use!
+
+## Writing Headings
+Use one or more `#` symbols at the start of a line to create headings:
+```
+# Main Heading
+## Subheading
+### Smaller Heading
+```
+
+## Emphasis
+*Italics text* is produced by wrapping text in single asterisks or underscores:
+```
+*Italics text* or _Italics text_
+```
+
+**Bold text** is produced by wrapping text in double asterisks or underscores:
+```
+**Bold text** or __Bold text__
+```
+
+## Lists
+Create bullet lists using dashes, pluses, or asterisks:
+```
+- Item 1
+- Item 2
+```
+
+## Code
+Inline code: `code here`
+
+Code block:
+```
+```
+Your code here
+```
+```
+
+## Links
+Create links using square brackets and parentheses:
+```
+[Link text](https://example.com)
+```
