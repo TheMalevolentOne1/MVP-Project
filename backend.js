@@ -22,6 +22,7 @@ EVENTS (Calendar):
   GET    /user/events       → List all events for user ✔️
   GET    /user/events/upcoming   → Get all upcoming events (future dates) ❌
   POST   /user/events       → Create event (or import from ICS (when implemented)) ✔️
+  PATCH  /user/events/:id    → Edit event by ID ✔️
   DELETE /user/events/:id   → Delete event by ID ✔️
 
 =============================================================================
@@ -463,6 +464,48 @@ app.post('/user/events', async (req, res) => {
         return res.status(201).json({ success: true, id: result.id });
     } catch (error) {
         console.error('Error creating event:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+/*
+Brief: Edit Event for Logged-in User
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+
+@Return: JSON
+@ReturnT: Event edited successfully
+@ReturnF: Error message
+*/
+app.patch('/user/events/:id', async (req, res) => {
+    if (!req.session || !req.session.userId) 
+    {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const uuid = req.session.userId;
+    const id = req.params.id;
+    const { title, start, end_time, location, description } = req.body;
+
+    // Basic Validation
+    if (!title || !start || !end_time) 
+    {
+        return res.status(400).json({ success: false, error: 'Title, Start Date, and End Time are required' });
+    }
+
+    try 
+    {
+        const result = await databaseHandler.editEvent(uuid, id, title, start, end_time, location, description);
+        
+        if (result.success) 
+        {
+            return res.json({ success: true });
+        }
+        else {
+            return res.status(500).json({ success: false, error: result.error });
+        }
+    } catch (error) {
+        console.error('Error editing event:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });

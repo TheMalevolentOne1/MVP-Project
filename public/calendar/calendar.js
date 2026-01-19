@@ -78,6 +78,43 @@ const deleteEvent = async (eventId) =>
 };
 
 /*
+Brief: Edit an event by ID
+@Param1: eventId (Number, ID of event to edit)
+*/
+const editEvent = async (eventID) =>
+{
+    
+
+    // Only send fields that are provided
+    const updatedData = {};
+    if (title) updatedData.title = title;
+    if (start) updatedData.start = start;
+    if (end_time) updatedData.end_time = end_time;
+    if (location) updatedData.location = location;
+    if (description) updatedData.description = description;
+
+    try {
+        const response = await fetch(`/user/events/${eventID}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedData),
+        });
+        const data = await response.json();
+        if (data.success) {
+            alert('Event updated successfully');
+            fetchAndPopulateEvents(); // Refresh calendar
+        } else {
+            alert('Failed to update event: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error updating event:', error);
+        alert('Error updating event');
+    }
+}
+
+/*
 Brief: Render events onto the calendar grid
 @Param1: events (Array, List of event objects from database)
 */
@@ -174,7 +211,7 @@ const renderEvents = async (events) =>
                 editButton.onclick = (e) =>
                 {
                     e.preventDefault();
-                    alert("TODO: EDIT EVENT FEATURE"); // Use same modal as before but pre-fill fields with event data
+                    editEvent(event.id);
                     e.stopPropagation(); // Prevent triggering slot click
                 }
 
@@ -365,7 +402,8 @@ const daySelect = (weekStart, dayIndex, hour) =>
 Brief: Render Calendar for Week of Starting Date
 @Param1: startDate (Int, Monday of relevant week)
 */
-const renderWeek = (startDate) => {
+const renderWeek = (startDate) => 
+{
     const grid = document.getElementById('calendarGrid');
     grid.innerHTML = ''; // Clear previous grid
 
@@ -415,18 +453,20 @@ const renderWeek = (startDate) => {
     // Place the events on top of the newly created grid
     //renderEvents(weekDates);
 };
-
 /*
 Brief: Fetch events from server
 @Returns: Event List
 */
 const fetchEvents = async () => 
 {
-    try {
+    try
+    {
         const response = await fetch('/user/events');
         const data = await response.json();
         return data.success ? data.events : [];
-    } catch (e) {
+    }
+    catch (e) 
+    {
         console.error("Failed to fetch events", e);
         return [];
     }
