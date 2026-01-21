@@ -68,7 +68,8 @@ const deleteEvent = async (eventId) =>
 
     try 
     {
-        const response = await fetch(`/user/events/${eventId}`, {
+        const response = await fetch(`/user/events/${eventId}`, 
+        {
             method: 'DELETE'
         });
 
@@ -238,6 +239,7 @@ const renderEvents = async (events) =>
             // Create blocks for each hour on this day
             for (let hour = hourStart; hour <= hourEnd; hour++) 
             {
+                // Find the corresponding slot in the grid with data attributes
                 const slot = grid.querySelector(`.grid-slot[data-day="${dayIndex}"][data-hour="${hour}"]`);
                 
                 if (slot) 
@@ -476,13 +478,13 @@ Param2: dayIndex (Date, index of day in table)
 Param3: hour (String, hour selected)
 */
 const daySelect = (weekStart, dayIndex, hour) =>
-    {
-        const selectedDate = new Date(weekStart);
-        selectedDate.setDate(weekStart.getDate() + dayIndex);
-        selectedDate.setHours(hour, 0, 0, 0);
+{
+    const selectedDate = new Date(weekStart);
+    selectedDate.setDate(weekStart.getDate() + dayIndex);
+    selectedDate.setHours(hour, 0, 0, 0);
     
-        openEventModal(selectedDate);
-    };
+    openEventModal(selectedDate);
+};
 
 
 // Page Content

@@ -870,7 +870,8 @@ body.auth-page {
     display: grid;
     grid-template-columns: 60px repeat(7, 1fr); /* Time + 7 Days */
     /* 50px header + 24 * 60px hour slots */
-    grid-template-rows: 50px repeat(24, 60px); 
+    grid-template-rows: 50px repeat(24, 60px); /* 24 hours */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* Cells */

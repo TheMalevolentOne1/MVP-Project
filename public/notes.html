@@ -65,7 +65,11 @@
         
         <script src="./notes/notes.js"></script>
         <script>
-            w3.includeHTML();
+            w3.includeHTML(() => {
+                const script = document.createElement('script');
+                script.src = './shared/navbar.js';
+                document.body.appendChild(script);
+            });
         </script>
     </body>
 </html>
