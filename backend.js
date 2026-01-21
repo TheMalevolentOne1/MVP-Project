@@ -726,6 +726,8 @@ app.post('/user/timetable/sync', async (req, res) =>
             return res.status(400).json({ success: false, error: result.error || 'Failed to fetch timetable' });
         
         const events = result.events || [];
+
+        console.log('Fetched result:', result);
         
         if (events.length === 0)
             return res.status(400).json({ success: false, error: 'No events found in timetable' });
@@ -743,7 +745,8 @@ app.post('/user/timetable/sync', async (req, res) =>
                 // Use the eventDate directly from the parsed event (YYYY-MM-DD format)
                 const dateStr = event.eventDate;
                 
-                if (!dateStr) {
+                if (!dateStr) 
+                {
                     console.error('Event missing eventDate:', event);
                     continue;
                 }
