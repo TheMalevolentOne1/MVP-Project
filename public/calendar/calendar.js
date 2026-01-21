@@ -86,19 +86,21 @@ Brief: Edit an event by ID
 */
 const editEvent = async (eventID, title, start, end_time, location, description) =>
 {
-    // Validate required fields
-    if (!title || !start || !end_time) {
-        alert('Title, start time, and end time are required');
-        return;
-    }
-
     try {
+        // Build update object with only provided fields
+        const updateData = {};
+        if (title !== undefined) updateData.title = title;
+        if (start !== undefined) updateData.start = start;
+        if (end_time !== undefined) updateData.end_time = end_time;
+        if (location !== undefined) updateData.location = location;
+        if (description !== undefined) updateData.description = description;
+
         const response = await fetch(`/user/events/${eventID}`, {
             method: 'PATCH',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ title, start, end_time, location, description }),
+            body: JSON.stringify(updateData),
         });
         
         const data = await response.json();
@@ -114,6 +116,32 @@ const editEvent = async (eventID, title, start, end_time, location, description)
         alert('Error updating event');
     }
 }
+
+/*
+Brief: Open edit modal for an event
+@Param1: event (Object, Event data)
+*/
+const openEditModal = (event) => {
+    const modal = document.getElementById('eventModal');
+    const modalTitle = modal.querySelector('h2');
+    const submitBtn = document.getElementById('createEventBtn');
+    
+    // Change modal to edit mode
+    modalTitle.innerText = 'Edit Event';
+    submitBtn.innerText = 'Save';
+    
+    // Pre-fill form with event data
+    document.getElementById('eventTitle').value = event.title || '';
+    document.getElementById('eventStart').value = event.start ? event.start.slice(0, 16) : '';
+    document.getElementById('eventEnd').value = event.end_time ? event.end_time.slice(0, 16) : '';
+    document.getElementById('eventLocation').value = event.location || '';
+    document.getElementById('eventDescription').value = event.description || '';
+    
+    // Store event ID for submission
+    modal.dataset.editingEventId = event.id;
+    
+    modal.classList.remove('hidden');
+};
 
 /*
 Brief: Render events onto the calendar grid
@@ -135,7 +163,8 @@ const renderEvents = async (events) =>
     weekEnd.setHours(0, 0, 0, 0);
 
     // Iterate through events and create blocks
-    events.forEach(event => {
+    events.forEach(event => 
+    {
         const startDate = new Date(event.start);
         const endDate = new Date(event.end_time);
         
@@ -197,9 +226,6 @@ const renderEvents = async (events) =>
                 
                 // Event content
                 let eventContent = `${startTime} - ${endTime} | ${event.title}`;
-                if (event.description) {
-                    eventContent += `\n${event.description}`;
-                }
                 if (event.location) {
                     eventContent += `\n${event.location}`;
                 }
@@ -212,7 +238,7 @@ const renderEvents = async (events) =>
                 editButton.onclick = (e) =>
                 {
                     e.preventDefault();
-                    editEvent(event.id);
+                    openEditModal(event);
                     e.stopPropagation(); // Prevent triggering slot click
                 }
 
@@ -309,17 +335,25 @@ Brief: Open the calendar event model when a table slot is selected
 const openEventModal = (dateTime) =>
 {
     const modal = document.getElementById('eventModal');
+    const modalTitle = modal.querySelector('h2');
+    const submitBtn = document.getElementById('createEventBtn');
+
+    // Reset to create mode
+    modalTitle.innerText = 'Create Event';
+    submitBtn.innerText = 'Create';
+    delete modal.dataset.editingEventId;
 
     // Format for datetime-local input (Database Support)
     const isoString = dateTime.toISOString().slice(0, 16);
     document.getElementById('eventStart').value = isoString;
+    document.getElementById('eventEnd').value = '';
 
     // Clear fields
     document.getElementById('eventTitle').value = '';
     document.getElementById('eventLocation').value = '';
     document.getElementById('eventDescription').value = '';
 
-    modal.classList.remove('hidden'); // Close Modal
+    modal.classList.remove('hidden');
 };
 
 /*
@@ -327,14 +361,19 @@ Brief: Close the calendar event modal
 */
 const closeEventModal = (e) =>
 {
-    document.getElementById('eventModal').classList.add('hidden');
+    const modal = document.getElementById('eventModal');
+    modal.classList.add('hidden');
+    delete modal.dataset.editingEventId; // Clear edit state
 };
 
 /*
-Brief: Handle Create Event Form Submission
+Brief: Handle Create/Edit Event Form Submission
 */
-const handleCreateEvent = async () =>
+const handleEventSubmit = async () =>
 {
+    const modal = document.getElementById('eventModal');
+    const editingId = modal.dataset.editingEventId;
+    
     const title = document.getElementById('eventTitle').value.trim();
     const start = document.getElementById('eventStart').value.trim();
     var end_time = document.getElementById('eventEnd').value.trim();
@@ -354,33 +393,47 @@ const handleCreateEvent = async () =>
 
     try 
     {
-        const response = await fetch('/user/events', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ title, start, end_time, location, description }),
-        });
+        let response;
+        
+        if (editingId) {
+            // Edit existing event
+            response = await fetch(`/user/events/${editingId}`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title, start, end_time, location, description }),
+            });
+        } else {
+            // Create new event
+            response = await fetch('/user/events', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ title, start, end_time, location, description }),
+            });
+        }
 
         const data = await response.json();
 
         if (data.success) 
         {
-            console.log('Event created with ID:', data.id);
-            alert('Event Created'); // Notify user of successful creation
+            console.log(editingId ? 'Event updated' : 'Event created with ID:', data.id);
+            alert(editingId ? 'Event Updated' : 'Event Created');
             closeEventModal();
-            renderWeek(currentWeekStart); // Refresh calendar
-            fetchAndPopulateEvents(); // Fetch and render updated events
+            renderWeek(currentWeekStart);
+            fetchAndPopulateEvents();
         } 
         else 
         {
-            alert('Failed to create event: ' + data.error);
+            alert('Failed to save event: ' + data.error);
         }
     } 
     catch (error) 
     {
-        console.error('Error creating event:', error);
-        alert('Error creating event');
+        console.error('Error saving event:', error);
+        alert('Error saving event');
     }
 };
 
@@ -570,7 +623,7 @@ document.addEventListener('DOMContentLoaded', () =>
     const eventForm = document.getElementById('eventForm');
     eventForm.onsubmit = async (e) => {
         e.preventDefault(); // Prevents page refresh
-        await handleCreateEvent();
+        await handleEventSubmit();
     };
 
     loadUsername(); // Ensure user is logged in
