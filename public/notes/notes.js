@@ -63,22 +63,6 @@ const loadUsername = async () =>
 }
 
 /*
-Brief: Logs out the current user
-*/
-const handleLogout = async () =>
-{
-    try {
-        const response = await fetch('/auth/logout', { method: 'POST' });
-        if (response.ok) {
-            window.location.href = './login_page.html';
-        }
-    } catch (error) {
-        console.error('Logout error:', error);
-        alert('Logout failed');
-    }
-}
-
-/*
 Brief: Fetches and populates the notes list
 */
 const populateNotesList = async () =>

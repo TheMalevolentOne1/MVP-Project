@@ -1013,6 +1013,29 @@ body.auth-page {
     border-left: 3px solid #1e5db8;
 }
 
+.edit-event-btn {
+    position: absolute;
+    top: 2px;
+    right: 22px;
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 0.7rem;
+    width: 19px;
+    height: 19px;
+    border-radius: 4px;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.edit-event-btn:hover {
+    background: rgba(59, 130, 246, 0.7);
+}
+
 .delete-event-btn {
     position: absolute;
     top: 2px;

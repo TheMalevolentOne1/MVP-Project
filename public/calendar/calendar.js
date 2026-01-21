@@ -41,22 +41,6 @@ const loadUsername = async () =>
 }
 
 /*
-Brief: Logout API Call
-*/
-const handleLogout = async () =>
-{
-    try 
-    {
-        const response = await fetch('/auth/logout', { method: 'POST' });
-        if (response.ok)
-            window.location.href = './login_page.html';
-    } catch (error) {
-        console.error('Logout error:', error);
-        alert('Logout failed');
-    }
-}
-
-/*
 Brief: Delete an event by ID
 @Param1: eventId (Number, ID of event to delete)
 */

@@ -59,12 +59,9 @@
         </div>
         
         <script src="./dashboard/dashboard.js"></script>
+        <script src="./shared/navbar.js"></script>
         <script>
-            w3.includeHTML(() => {
-                const script = document.createElement('script');
-                script.src = './shared/navbar.js';
-                document.body.appendChild(script);
-            });
+            w3.includeHTML();
         </script>
     </body>
 </html>

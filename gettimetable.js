@@ -3,7 +3,13 @@
 require('dotenv').config(); // Load Env Vars
 const cheerio = require('cheerio');
 
-// For Building Code Mapping
+const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)';
+const url = 'https://apps.uclan.ac.uk/timetables/';
+
+/*
+Brief: Building Code Mapping
+Used to convert short codes (e.g., "CM") into full building names
+*/
 const buildingCodes = {
   "AB": "Adelphi Building",
   "AC": "St Peter’s Arts Centre",
@@ -49,10 +55,28 @@ const buildingCodes = {
   "Ri": "Ribble Hall (Residence)",
   "Rr": "Roeburn Hall (Residence)",
   "Wr": "Whitendale Hall (Residence)"
-}
+};
 
-const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)';
-const url = 'https://apps.uclan.ac.uk/timetables/';
+/*
+Brief: Parse Location Building Room Strings
+*/
+const parseLocation = (rawLocation) => {
+  if (!rawLocation) return "Unknown Location";
+
+  // Regex to extract Building Code (2-3 chars) and Room Number
+  const locationRegex = /^([A-Za-z]{2,3})[ -]?(.+)$/;
+  const match = rawLocation.trim().match(locationRegex);
+
+  if (match) {
+      const code = match[1];
+      const details = match[2];
+      const buildingName = buildingCodes[code] || code; // Fallback to code if not found
+      return `${buildingName} : (${code} ${details})`;
+  }
+
+  // If no specific pattern matches, just check if the whole string is a known code
+  return buildingCodes[rawLocation] || rawLocation;
+};
 
 // HELPER FUNCTION
 
@@ -78,7 +102,7 @@ const parseEvents = (text, events = []) =>
       startTime: match[1],
       endTime: match[2],
       moduleName: match[3],
-      location: buildingCodes[match[4]] || match[4],
+      location: parseLocation(match[4]),
       lecturer: match[5],
       type: match[6],
       group: match[7],
