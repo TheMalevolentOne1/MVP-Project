@@ -598,7 +598,7 @@ const extractTimeTable = async () => {
     const sundayStr = weekEnd.toLocaleDateString('en-US', opts);
 
     // Confirm extraction
-    const confirmed = confirm(`Extract timetable for the week:\n${mondayStr} - ${sundayStr}\n\nProceed with extraction?`);
+    const confirmed = confirm(`Extract timetable for the week:\n${mondayStr} - ${sundayStr}\n\n⚠️ Warning: Duplicate events will be skipped.\n\nProceed with extraction?`);
 
     if (!confirmed) {
         return;
@@ -618,7 +618,8 @@ const extractTimeTable = async () => {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            alert(`Successfully imported ${data.imported} events`);
+            const msg = `✓ Timetable Import Complete\n\nImported: ${data.imported} events\nDuplicates skipped automatically`;
+            alert(msg);
             // Refresh calendar to show new events
             fetchAndPopulateEvents();
         } else {

@@ -765,10 +765,14 @@ app.post('/user/timetable/sync', async (req, res) =>
                     event.description || ''
                 );
                 
-                if (result.success !== false) 
+                if (result.success === true) 
                 {
                     importedCount++;
                     importedEvents.push(event);
+                }
+                else
+                {
+                    console.log('Skipping duplicate event:', eventTitle);
                 }
             } 
             catch (eventError) 

@@ -91,9 +91,9 @@ Brief: Parse events recursively from text
 */
 const parseEvents = (text, events = []) => 
 {
-  // Pattern: time module location(BuildingCode+Room) lecturer type (Group: group)
-  // Location is anchored by building code pattern: 2-3 letters + optional hyphen + digits
-  const eventPattern = /(\d{2}:\d{2}) - (\d{2}:\d{2}) (.+?) ([A-Za-z]{2,3}[-]?\d+[A-Za-z]?) (.+?) (\S+) \(Group: (.+?)\)/;
+  // Pattern matches the 5-part structure (collapsed to one line):
+  // Time | Module | Location (contains "Building") | Lecturer | Type (Group: group)
+  const eventPattern = /(\d{2}:\d{2}) - (\d{2}:\d{2}) (.+?) (.+?Building.+?) (.+?) (.+?) \(Group: (.+?)\)/;
   console.log('Parsing text:', text.match(eventPattern));
   const match = text.match(eventPattern);
 
@@ -116,7 +116,7 @@ const parseEvents = (text, events = []) =>
     // Remove the matched part and recurse on the remaining text
     const remainingText = text.replace(match[0], '').trim();
     return parseEvents(remainingText, events);
-  }
+  } 
 
   return events;
 }
