@@ -85,17 +85,22 @@ const populateNotesList = async () =>
 {
     try 
     {
+        console.log('Fetching notes...');
         const response = await fetch('/user/notes');
         const data = await response.json();
         
+        console.log('Notes response:', data);
+        
         if (!data.success) 
         {
-            console.error('Failed to fetch notes');
+            console.error('Failed to fetch notes:', data.error);
             return;
         }
         
         const notesList = document.getElementById('notesList');
         notesList.innerHTML = ''; // Clear existing notes
+        
+        console.log('Number of notes:', data.notes ? data.notes.length : 0);
         
         if (data.notes && data.notes.length > 0) 
         {
@@ -332,7 +337,7 @@ document.addEventListener('DOMContentLoaded', async () =>
     const params = new URLSearchParams(window.location.search);
     const noteTitle = params.get('note');
     if (noteTitle) {
-        
+
         // Wait a moment for notes to be rendered, then find and click the note
         setTimeout(() => {
             const noteElements = document.querySelectorAll('.note-item');
