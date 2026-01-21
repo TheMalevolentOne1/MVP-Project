@@ -1,4 +1,5 @@
 require('dotenv').config();
+const { DB_HOST, DB_USER, DB_PASSWORD, DB_NAME, DB_PORT } = process.env;
 
 const mysql2 = require('mysql2/promise');
 const fs = require('fs');
@@ -6,11 +7,11 @@ const path = require('path');
 
 // Promised-Based MySQL Connection Pool
 const pool = mysql2.createPool({
-    host: process.env.DB_HOST,
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
+    host: DB_HOST,
+    user: DB_USER,
+    password: DB_PASSWORD,
+    database: DB_NAME,
+    port: DB_PORT,
     waitForConnections: true,
     connectionLimit: 10, // For Demonstration Adjustment TODO: 10 -> 20. Verify with intensive LTE testing
     queueLimit: 0
@@ -263,20 +264,66 @@ Brief: Create a new event for a user
 
 @Return: JSON
 @ReturnT: Event created with ID
-@ReturnF: Failure
+@ReturnF: Failure or duplicate event
 
 */
 const createEvent = async (uuid, title, start, end_time, location, description) => 
 {
-    try {
+    try 
+    {
+        // Check for duplicate event
+        const [existing] = await pool.query(
+            'SELECT id FROM calendar_events WHERE uuid = ? AND title = ? AND start = ? AND end_time = ?',
+            [uuid, title, start, end_time]
+        );
+
+        if (existing.length > 0) {
+            return { success: false, error: 'Event already exists' };
+        }
+
+        // Insert new event
         const [result] = await pool.query(
             'INSERT INTO calendar_events (uuid, title, start, end_time, location, description) VALUES (?, ?, ?, ?, ?, ?)',
             [uuid, title, start, end_time, location, description]
         );
+
         return { success: true, id: result.insertId };
     } catch (err) {
         console.error('Error creating event:', err);
         throw err;
+    }
+}
+
+/*
+Brief: Edit an event for a user
+@Param1 uuid - User's UUID
+@Param2 id - Event ID
+@Param3 title - Event title
+@Param4 start - Event start time
+@Param5 end_time - Event end time
+@Param6 location - Event location
+@Param7 description - Event description
+
+@Return: JSON
+@ReturnT: Success
+@ReturnF: Failure
+*/
+const editEvent = async (uuid, id, title, start, end_time, location, description) => 
+{
+    try {
+        const [result] = await pool.query(
+            'UPDATE calendar_events SET title = ?, start = ?, end_time = ?, location = ?, description = ? WHERE id = ? AND uuid = ?',
+            [title, start, end_time, location, description, id, uuid]
+        );
+        
+        if (result.affectedRows > 0) {
+            return { success: true };
+        } else {
+            return { success: false, error: 'Event not found or unauthorized' };
+        }
+    } catch (err) {
+        console.error('Error editing event:', err);
+        return { success: false, error: err.message };
     }
 }
 
@@ -351,4 +398,4 @@ const deleteAccount = async (uuid) =>
 }
 
 // Export functions
-module.exports = { verifyUserEmail, addNewUser, getUserEmailById, createNote, editNoteContent, deleteNote, getUserNotes, getNoteByTitle, doesNoteExist, getUserEvents, createEvent, deleteEvent, doesEventExist, deleteAccount };
+module.exports = { verifyUserEmail, addNewUser, getUserEmailById, createNote, editNoteContent, deleteNote, getUserNotes, getNoteByTitle, doesNoteExist, getUserEvents, createEvent, editEvent, deleteEvent, doesEventExist, deleteAccount };

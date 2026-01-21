@@ -13,14 +13,14 @@ AUTH:
 NOTES:
   GET    /user/notes        → List all notes for logged-in user ✔️
   GET    /user/notes/:title    → Get single note by Title ✔️
-  GET    /user/notes/recent/  → Get last updated notes (last 7 days) ❌
+  GET    /user/notes/recent/  → Get last updated notes (last 7 days) ✔️
   POST   /user/notes        → Create new note ✔️
   PATCH  /user/notes/:title    → Update note title/body ✔️
   DELETE /user/notes/:title    → Delete note ✔️
 
 EVENTS (Calendar):
   GET    /user/events       → List all events for user ✔️
-  GET    /user/events/upcoming   → Get all upcoming events (future dates) ❌
+  GET    /user/events/upcoming   → Get all upcoming events (next 7 days) ✔️
   POST   /user/events       → Create event (or import from ICS (when implemented)) ✔️
   PATCH  /user/events/:id    → Edit event by ID ✔️
   DELETE /user/events/:id   → Delete event by ID ✔️
@@ -29,7 +29,7 @@ EVENTS (Calendar):
 */
 
 require('dotenv').config();
-const { EXPRESS_PORT } = process.env;
+const { EXPRESS_PORT, SESSION_SECRET } = process.env; 
 
 const crypto = require('crypto'); // for UUID generation
 const CryptoJS = require('crypto-js'); // for AES-128 encryption/decryption
@@ -38,12 +38,13 @@ const express = require('express'); // for backend server
 const session = require('express-session'); // for session/cookie handling
 const fs = require('fs'); // for reading user_instructions
 const path = require('path'); // for path joining
+
 const databaseHandler = require('./databaseHandler'); // Database backend Handler module 
 
 const app = express();
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static('public'));
+app.use(express.json()); // for parsing application/json
+app.use(express.urlencoded({ extended: true })); 
+app.use(express.static('public')); // for serving static files
 
 /* 
 Brief: Express Session Middleware
@@ -52,7 +53,7 @@ Source: https://www.youtube.com/watch?v=OH6Z0dJ_Huk
 My familiarity with express-session was limited.
 */
 app.use(session({
-    secret: process.env.SESSION_SECRET, // "THE-SECRET-KEY-IS-A-SECRET" (Temporarily put here as a placeholder while dev)
+    secret: SESSION_SECRET, // "THE-SECRET-KEY-IS-A-SECRET" (Temporarily put here as a placeholder while dev)
     resave: false,
     saveUninitialized: false,
     cookie: { 
@@ -87,12 +88,16 @@ Brief: Check if User is Logged In
 @ReturnT: loggedIn true with userId and email
 @ReturnF: loggedIn false
 */
-app.get('/auth/whoami', async (req, res) => {
+app.get('/auth/whoami', async (req, res) => 
+{
     // Verify Session
-    if (req.session && req.session.userId) {
+    if (req.session && req.session.userId) 
+    {
         var email = await databaseHandler.getUserEmailById(req.session.userId);
         return res.json({ loggedIn: true, userId: req.session.userId, email });
-    } else {
+    } 
+    else 
+    {
         // If No Session Exists
         return res.json({ loggedIn: false });
     }
@@ -288,6 +293,57 @@ app.get('/user/notes', async (req, res) => {
 });
 
 /*
+Brief: Get Recent Notes for Logged-in User (last 7 days)
+@Param1: req - HTTP Request
+@Param2: res - HTTP Response
+
+@Return: JSON
+@ReturnT: Array of recent notes
+@ReturnF: Error message
+*/
+app.get('/user/notes/recent', async (req, res) => 
+{
+    if (!req.session || !req.session.userId) 
+    {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    
+    const userId = req.session.userId;
+    
+    try 
+    {
+        const notes = await databaseHandler.getUserNotes(userId);
+        const now = new Date();
+        const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        
+        // Filter notes updated in the last 7 days
+        const recentNotes = notes.filter(note => {
+            const updatedAt = new Date(note.updated_at);
+            return updatedAt >= sevenDaysAgo;
+        }).map(note => {
+            let decryptedContent = '';
+            try {
+                decryptedContent = CryptoJS.AES.decrypt(note.body, userId).toString(CryptoJS.enc.Utf8);
+            } catch (error) {
+                console.error('Error decrypting note:', error);
+                decryptedContent = 'Error: Unable to decrypt note content';
+            }
+            return {
+                title: note.title,
+                content: decryptedContent,
+                created_at: note.created_at,
+                updated_at: note.updated_at
+            };
+        });
+        
+        return res.json({ success: true, notes: recentNotes });
+    } catch (error) {
+        console.error('Error fetching recent notes:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+/*
 Brief: Create New Note for Logged-in User
 @Param1: req - HTTP Request Object
 @Param2: res - HTTP Response Object
@@ -416,22 +472,67 @@ app.delete('/user/notes/:title', async (req, res) => {
 
 /*
 Brief: Get All Events for Logged-in User
-@Param1: req - HTTP Request Object
-@Param2: res - HTTP Response Object
-@Return: JSON array of events
+@Param1: req - HTTP Request
+@Param2: res - HTTP Response
+
+@Return: JSON
+@ReturnT: Array of events
+@ReturnF: Error message
 */
-app.get('/user/events', async (req, res) => {
-    if (!req.session || !req.session.userId) {
+app.get('/user/events', async (req, res) => 
+{
+    if (!req.session || !req.session.userId)
         return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
+
     const uuid = req.session.userId;
-    try {
+    
+    try 
+    {
         const events = await databaseHandler.getUserEvents(uuid);
 
         // Note: Calendar events are NOT encrypted for MVP simplicity/speed
         return res.json({ success: true, events });
-    } catch (error) {
+    } 
+    catch (error) 
+    {
         console.error('Error fetching events:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+/*
+Brief: Get Upcoming Events for Logged-in User
+@Param1: req - HTTP Request
+@Param2: res - HTTP Response
+
+@Return: JSON
+@ReturnT: Array of upcoming events (next 7 days only)
+@ReturnF: Error message
+*/
+app.get('/user/events/upcoming', async (req, res) => 
+{
+    if (!req.session || !req.session.userId) 
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+
+    const uuid = req.session.userId;
+    
+    try 
+    {
+        const events = await databaseHandler.getUserEvents(uuid);
+        
+        // Filter events within the next 7 days
+        const now = new Date();
+        const sevenDaysFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days ahead in milliseconds
+
+        const upcomingEvents = events.filter(e => 
+        {
+            const eventStart = new Date(e.start);
+            return eventStart >= now && eventStart <= sevenDaysFromNow;
+        });
+        
+        return res.json({ success: true, events: upcomingEvents });
+    } catch (error) {
+        console.error('Error fetching upcoming events:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });
@@ -442,10 +543,11 @@ Brief: Create New Event for Logged-in User
 @Param2: res - HTTP Response Object
 @Return: JSON success message with new event ID or error
 */
-app.post('/user/events', async (req, res) => {
-    if (!req.session || !req.session.userId) {
+app.post('/user/events', async (req, res) => 
+{
+    if (!req.session || !req.session.userId) 
         return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
+
     const uuid = req.session.userId;
     const { title, start, end_time, location, description } = req.body;
 
@@ -457,9 +559,14 @@ app.post('/user/events', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Title, Start Date, and End Time are required' });
     }
 
-    try {        
+    try 
+    {        
         // Call DB Handler
         const result = await databaseHandler.createEvent(uuid, title, start, end_time, location, description);
+        
+        if (!result.success) {
+            return res.status(409).json({ success: false, error: result.error });
+        }
         
         return res.status(201).json({ success: true, id: result.id });
     } catch (error) {
@@ -477,11 +584,10 @@ Brief: Edit Event for Logged-in User
 @ReturnT: Event edited successfully
 @ReturnF: Error message
 */
-app.patch('/user/events/:id', async (req, res) => {
+app.patch('/user/events/:id', async (req, res) => 
+{
     if (!req.session || !req.session.userId) 
-    {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
 
     const uuid = req.session.userId;
     const id = req.params.id;
@@ -489,9 +595,7 @@ app.patch('/user/events/:id', async (req, res) => {
 
     // Basic Validation
     if (!title || !start || !end_time) 
-    {
         return res.status(400).json({ success: false, error: 'Title, Start Date, and End Time are required' });
-    }
 
     try 
     {
@@ -501,10 +605,13 @@ app.patch('/user/events/:id', async (req, res) => {
         {
             return res.json({ success: true });
         }
-        else {
+        else 
+        {
             return res.status(500).json({ success: false, error: result.error });
         }
-    } catch (error) {
+    } 
+    catch (error)
+    {
         console.error('Error editing event:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
@@ -516,10 +623,11 @@ Brief: Delete Event for Logged-in User
 @Param2: res - HTTP Response Object
 @Return: JSON success message or error
 */
-app.delete('/user/events/:id', async (req, res) => {
-    if (!req.session || !req.session.userId) {
+app.delete('/user/events/:id', async (req, res) => 
+{
+    if (!req.session || !req.session.userId) 
         return res.status(401).json({ success: false, error: 'Unauthorized' });
-    }
+
     const uuid = req.session.userId;
     const id = req.params.id;
 

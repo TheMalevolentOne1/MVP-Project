@@ -1,7 +1,8 @@
 /*
 TODO:
-- Edit Existing Events
-- ULAN Timetable Extraction
+- Edit Existing Events DONE
+- Delete Events DONE
+- ULAN Timetable Extraction 
 - Improve Event Calendar Rendering (Continous Blocks)
 - Notifications for:
   - Upcoming Events
@@ -79,19 +80,20 @@ const deleteEvent = async (eventId) =>
 
 /*
 Brief: Edit an event by ID
-@Param1: eventId (Number, ID of event to edit)
+@Param1: eventID (Number, ID of event to edit)
+@Param2: title (String, Event title)
+@Param3: start (String, ISO date-time string)
+@Param4: end_time (String, ISO date-time string)
+@Param5: location (String, Event location)
+@Param6: description (String, Event description)
 */
-const editEvent = async (eventID) =>
+const editEvent = async (eventID, title, start, end_time, location, description) =>
 {
-    
-
-    // Only send fields that are provided
-    const updatedData = {};
-    if (title) updatedData.title = title;
-    if (start) updatedData.start = start;
-    if (end_time) updatedData.end_time = end_time;
-    if (location) updatedData.location = location;
-    if (description) updatedData.description = description;
+    // Validate required fields
+    if (!title || !start || !end_time) {
+        alert('Title, start time, and end time are required');
+        return;
+    }
 
     try {
         const response = await fetch(`/user/events/${eventID}`, {
@@ -99,11 +101,13 @@ const editEvent = async (eventID) =>
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify(updatedData),
+            body: JSON.stringify({ title, start, end_time, location, description }),
         });
+        
         const data = await response.json();
+        
         if (data.success) {
-            alert('Event updated successfully');
+            console.log('Event updated:', eventID);
             fetchAndPopulateEvents(); // Refresh calendar
         } else {
             alert('Failed to update event: ' + data.error);
@@ -339,7 +343,8 @@ const handleCreateEvent = async () =>
     const location = document.getElementById('eventLocation').value.trim();
     const description = document.getElementById('eventDescription').value.trim();
 
-    if (!title || !start) {
+    if (!title || !start) 
+    {
         alert('Event title and start time are required.');
         return;
     }
@@ -368,7 +373,9 @@ const handleCreateEvent = async () =>
             closeEventModal();
             renderWeek(currentWeekStart); // Refresh calendar
             fetchAndPopulateEvents(); // Fetch and render updated events
-        } else {
+        } 
+        else 
+        {
             alert('Failed to create event: ' + data.error);
         }
     } 
@@ -529,13 +536,21 @@ const extractTimeTable = async () => {
         return;
     }
 
-    /* TODO: Implement ULAN timetable extraction logic
-     1. Fetch timetable data for the specified week
-     2. Parse and convert to calendar events
-     3. Insert events into the database
-     4. Refresh Calendar Page */
-
-    alert('Timetable extraction not yet implemented.\n\nEmail: ' + uniEmail + '\nWeek: ' + mondayStr + ' - ' + sundayStr); // Temporary alert
+    gettimetable(uniEmail, uniPassword, monday, weekEnd).then(events => 
+    {
+        // Assuming events is an array of event objects
+        events.forEach(async (event) => 
+        {
+            await createEvent(event.title,
+                event.start,
+                event.end_time,
+                event.location,
+                event.description);
+        });
+    }).catch(error => {
+        console.error('Error extracting timetable:', error);
+        alert('Failed to extract timetable. Please check your credentials and try again.');
+    });
 };
 
 // Brief: Get Monday of the week for start.
