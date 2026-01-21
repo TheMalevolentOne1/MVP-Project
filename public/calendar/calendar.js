@@ -1,8 +1,5 @@
 /*
-TODO:
-- Edit Existing Events DONE
-- Delete Events DONE
-- ULAN Timetable Extraction 
+(POST-MVP) 
 - Improve Event Calendar Rendering (Continous Blocks)
 - Notifications for:
   - Upcoming Events
@@ -227,6 +224,7 @@ const renderEvents = async (events) =>
                     deleteEvent(event.id);
                     e.stopPropagation();
                 };
+                eventBlock.appendChild(editButton);
                 eventBlock.appendChild(deleteButton);
 
                 slot.appendChild(eventBlock);
@@ -536,20 +534,30 @@ const extractTimeTable = async () => {
         return;
     }
 
-    gettimetable(uniEmail, uniPassword, monday, weekEnd).then(events => 
-    {
-        // Assuming events is an array of event objects
-        events.forEach(async (event) => 
-        {
-            await createEvent(event.title,
-                event.start,
-                event.end_time,
-                event.location,
-                event.description);
-        });
-    }).catch(error => {
-        console.error('Error extracting timetable:', error);
-        alert('Failed to extract timetable. Please check your credentials and try again.');
+    // Call backend endpoint to sync timetable
+    fetch('/user/timetable/sync', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            email: uniEmail,
+            password: uniPassword,
+            startDate: monday.toISOString(),
+            endDate: weekEnd.toISOString()
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Successfully imported ${data.imported} events`);
+            // Refresh calendar to show new events
+            fetchAndPopulateEvents();
+        } else {
+            alert('Failed to import events: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error syncing timetable:', error);
+        alert('Failed to sync timetable. Please check your credentials and try again.');
     });
 };
 

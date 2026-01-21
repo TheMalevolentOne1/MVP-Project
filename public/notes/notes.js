@@ -321,11 +321,27 @@ const saveNote = async () =>
 Brief: Wait for page to load
 @Param1 function (Function, Function to execute on load)
 */
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', async () => 
+{
     const userData = await loadUsername();
     
     // Load notes list
     await populateNotesList();
+
+    // Check for query parameter to auto-select a note
+    const params = new URLSearchParams(window.location.search);
+    const noteTitle = params.get('note');
+    if (noteTitle) {
+        
+        // Wait a moment for notes to be rendered, then find and click the note
+        setTimeout(() => {
+            const noteElements = document.querySelectorAll('.note-item');
+            const matchingNote = Array.from(noteElements).find(el => el.dataset.title === noteTitle);
+            if (matchingNote) {
+                selectNote(matchingNote);
+            }
+        }, 100);
+    }
 
     // Add note button click handler
     document.querySelector('.add-btn').addEventListener('click', () => CreateNote());

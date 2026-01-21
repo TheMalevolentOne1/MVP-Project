@@ -6,7 +6,8 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <link rel="stylesheet" href="styles.css" />
         <script src="https://www.w3schools.com/lib/w3.js"></script>
-    </head>    <body class="app-page">
+    </head>
+    <body class="app-page">
         <!-- Header Bar -->
         <header class="app-header">
             <button class="logo-btn" onclick="window.location = 'index.html'">Logo</button>
@@ -17,11 +18,44 @@
         <!-- Include shared navbar -->
         <div w3-include-html="shared/navbar.html"></div>
 
-        <!-- Main Content -->
-        <div class="app-content">
-            <p>Dashboard content goes here...</p>
+        <!-- Main Dashboard Content -->
+        <div class="dashboard-container">
+            <!-- Left Sidebar: Recent Notes -->
+            <div class="dashboard-sidebar dashboard-notes-sidebar">
+                <h2>Recent Notes</h2>
+                <div id="recent-notes-list" class="dashboard-list">
+                    <p class="loading-text">Loading notes...</p>
+                </div>
+            </div>
 
-            <div id="small-calendar"></div> <!-- Source Tutorial: https://www.youtube.com/shorts/kh0OqNepAV0 -->
+            <!-- Middle Section: TBD -->
+            <div class="dashboard-main">
+                <h2>Quick Overview</h2>
+                <div class="dashboard-tbd">
+                    <p>Welcome to your dashboard!</p>
+                    <p class="tbd-subtitle">More features coming soon...</p>
+                    
+                    <!-- Quick Stats -->
+                    <div class="quick-stats">
+                        <div class="stat-card">
+                            <span class="stat-number" id="notes-count">-</span>
+                            <span class="stat-label">Recent Notes</span>
+                        </div>
+                        <div class="stat-card">
+                            <span class="stat-number" id="events-count">-</span>
+                            <span class="stat-label">Upcoming Events</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Sidebar: Upcoming Events -->
+            <div class="dashboard-sidebar dashboard-events-sidebar">
+                <h2>Upcoming Events</h2>
+                <div id="upcoming-events-list" class="dashboard-list">
+                    <p class="loading-text">Loading events...</p>
+                </div>
+            </div>
         </div>
         
         <script src="./dashboard/dashboard.js"></script>

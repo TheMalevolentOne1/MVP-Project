@@ -65,8 +65,10 @@ Brief: Parse events recursively from text
 @ReturnT: Parsed events
 @ReturnF: No events found
 */
-const parseEvents = (text, events = []) => {
+const parseEvents = (text, events = []) => 
+{
   // Updated pattern: time module location lecturer type (Group: group)
+  // DD:DD - DD:DD ModuleName BuildingCode LecturerName EventType (Group: GroupName)
   const eventPattern = /(\d{2}:\d{2}) - (\d{2}:\d{2}) (.+?) (.+?) (.+?) (.+?) \(Group: (.+?)\)/;
   const match = text.match(eventPattern);
 
@@ -107,10 +109,31 @@ const parseUserEvents = async (timetableHTML) =>
   const $ = cheerio.load(timetableHTML);
   const allEvents = [];
 
-  $('td').filter((index, td) => $(td).text().includes('Group')).each((i, td) => {
-    const cellText = $(td).text().trim().replace(/\s+/g, ' ');
-    const eventsFromCell = parseEvents(cellText);
-    allEvents.push(eventsFromCell);
+  // Each row has a date in the first column (th), then event cells (td)
+  $('tr').each((rowIndex, tr) => {
+    // Get the date from the first th cell in this row
+    const dateHeader = $(tr).find('th').first().text().trim();
+    
+    // Parse date like "Monday 19/01/2026" - extract DD/MM/YYYY
+    const dateMatch = dateHeader.match(/(\d{2})\/(\d{2})\/(\d{4})/);
+    if (!dateMatch) return; // Skip header rows without dates
+    
+    const eventDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`; // YYYY-MM-DD format
+    
+    // Process each td cell in this row for events
+    $(tr).find('td').each((colIndex, td) => {
+      const cellText = $(td).text().trim().replace(/\s+/g, ' ');
+      
+      // Only process cells that contain 'Group' (event cells)
+      if (cellText.includes('Group')) {
+        const eventsFromCell = parseEvents(cellText);
+        
+        eventsFromCell.forEach(event => {
+          event.eventDate = eventDate; // Use the actual date from the row
+          allEvents.push(event);
+        });
+      }
+    });
   });
 
   // Return based on parsed events
@@ -157,7 +180,7 @@ async function fetchTimetable(user, pass) {
     if (!getRes.ok) 
       return {success: false, error: `Failed to fetch timetable: ${getRes.status} ${getRes.statusText}`};
     else
-      return {success: true, events: await parseUserEvents(await getRes.text())};
+      return await parseUserEvents(await getRes.text());
 
   } catch (error) {
     console.error('Error fetching timetable:', error.message);
@@ -165,8 +188,9 @@ async function fetchTimetable(user, pass) {
   }
 }
 
+/*
 // Example usage
-/*fetchTimetable('KRobinson25@Lancashire.ac.uk', 'Rebel250904^^^^').then(async html => 
+fetchTimetable('KRobinson25@Lancashire.ac.uk', 'Rebel250904^^^^').then(async html => 
 {
   console.log('Timetable HTML fetched successfully.');
   console.log('Timetable HTML length:', html.length);
@@ -175,6 +199,7 @@ async function fetchTimetable(user, pass) {
   return await parseUserEvents(html);
 }).catch(err => {
   console.error('Error:', err.message);
-});*/
+});
+*/
 
 module.exports = { fetchTimetable };

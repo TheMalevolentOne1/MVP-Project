@@ -40,6 +40,7 @@ const fs = require('fs'); // for reading user_instructions
 const path = require('path'); // for path joining
 
 const databaseHandler = require('./databaseHandler'); // Database backend Handler module 
+const { fetchTimetable } = require('./gettimetable'); // Timetable scraper module
 
 const app = express();
 app.use(express.json()); // for parsing application/json
@@ -679,6 +680,100 @@ app.post('/user/del-acc/', async (req, res) =>
     {
         console.error('Error deleting account:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+/*
+Brief: Sync Timetable from University Portal
+@Param1: req - HTTP Request
+@Param2: res - HTTP Response
+
+@Return: JSON 
+@ReturnT: Number of events imported
+@ReturnF: Error message
+*/
+app.post('/user/timetable/sync', async (req, res) => 
+{
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const { email, password, startDate } = req.body;
+    
+    if (!email || !password) {
+        return res.status(400).json({ success: false, error: 'Email and password required' });
+    }
+
+    try 
+    {
+        // Fetch timetable from university portal
+        const result = await fetchTimetable(email, password);
+        
+        if (!result.success)
+            return res.status(400).json({ success: false, error: result.error || 'Failed to fetch timetable' });
+        
+        const events = result.events || [];
+        
+        if (events.length === 0)
+            return res.status(400).json({ success: false, error: 'No events found in timetable' });
+        
+        let importedCount = 0;
+        const importedEvents = [];
+        
+        // Import each event - events now include eventDate from the parser
+        for (const event of events)
+        {
+            if (!event) continue;
+            
+            try 
+            {
+                // Use the eventDate directly from the parsed event (YYYY-MM-DD format)
+                const dateStr = event.eventDate;
+                
+                if (!dateStr) {
+                    console.error('Event missing eventDate:', event);
+                    continue;
+                }
+                
+                // Map parsed event fields to database fields
+                const eventTitle = event.moduleName || 'Untitled Event';
+                const startDateTime = `${dateStr}T${event.startTime}:00`;
+                const endDateTime = `${dateStr}T${event.endTime}:00`;
+                
+                const result = await databaseHandler.createEvent(
+                    req.session.userId,
+                    eventTitle,
+                    startDateTime,
+                    endDateTime,
+                    event.location || '',
+                    event.description || ''
+                );
+                
+                if (result.success !== false) 
+                {
+                    importedCount++;
+                    importedEvents.push(event);
+                }
+            } 
+            catch (eventError) 
+            {
+                console.error('Error importing event:', eventError);
+                // Continue importing other events even if one fails
+            }
+        }
+        
+        return res.json(
+        { 
+            success: true, 
+            message: `Imported ${importedCount} events`,
+            events: importedEvents,
+            imported: importedCount
+        });
+    }
+    catch (error) 
+    {
+        console.error('Error syncing timetable:', error);
+        return res.status(500).json({ success: false, error: 'Failed to sync timetable: ' + error.message });
     }
 });
 

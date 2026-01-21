@@ -31,7 +31,8 @@ const login = async () =>
     submitBtn.disabled = true;
     submitBtn.textContent = 'Logging in...';
 
-    await fetch('/auth/login', {
+    await fetch('/auth/login', 
+    {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
