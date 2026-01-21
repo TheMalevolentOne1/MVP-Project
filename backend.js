@@ -550,14 +550,23 @@ app.post('/user/events', async (req, res) =>
         return res.status(401).json({ success: false, error: 'Unauthorized' });
 
     const uuid = req.session.userId;
-    const { title, start, end_time, location, description } = req.body;
+    const { title, start, location, description } = req.body;
+    let { end_time } = req.body;
 
     // Basic Validation
     if (!title || !start) 
     {
-        if (!end_time) { end_time = start; } // If no end_time provided, set it to start time
-        
-        return res.status(400).json({ success: false, error: 'Title, Start Date, and End Time are required' });
+        return res.status(400).json({ success: false, error: 'Title and Start Date are required' });
+    }
+
+    // If no end_time provided, set it to start time
+    if (!end_time) { 
+        end_time = start; 
+    }
+
+    // Validate end time is not before start time
+    if (new Date(end_time) < new Date(start)) {
+        return res.status(400).json({ success: false, error: 'End time cannot be before start time' });
     }
 
     try 
@@ -597,6 +606,10 @@ app.patch('/user/events/:id', async (req, res) =>
     // Basic Validation
     if (!title || !start || !end_time) 
         return res.status(400).json({ success: false, error: 'Title, Start Date, and End Time are required' });
+
+    // Validate end time is not before start time
+    if (new Date(end_time) < new Date(start)) 
+        return res.status(400).json({ success: false, error: 'End time cannot be before start time' });
 
     try 
     {

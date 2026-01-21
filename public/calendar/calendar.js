@@ -41,6 +41,22 @@ const loadUsername = async () =>
 }
 
 /*
+Brief: Logout API Call
+*/
+const handleLogout = async () =>
+{
+    try 
+    {
+        const response = await fetch('/auth/logout', { method: 'POST' });
+        if (response.ok)
+            window.location.href = './login_page.html';
+    } catch (error) {
+        console.error('Logout error:', error);
+        alert('Logout failed');
+    }
+}
+
+/*
 Brief: Delete an event by ID
 @Param1: eventId (Number, ID of event to delete)
 */
@@ -162,14 +178,20 @@ const renderEvents = async (events) =>
     weekEnd.setDate(weekEnd.getDate() + 7);
     weekEnd.setHours(0, 0, 0, 0);
 
+    console.log('Rendering events:', events);
+    console.log('Week range:', weekStart, 'to', weekEnd);
+
     // Iterate through events and create blocks
     events.forEach(event => 
     {
         const startDate = new Date(event.start);
         const endDate = new Date(event.end_time);
         
+        console.log('Event:', event.title, 'Start:', startDate, 'End:', endDate);
+        
         // Check if event is within the current week
         if (endDate < weekStart || startDate >= weekEnd) {
+            console.log('Skipping event - outside week range');
             return; // Skip events outside current week
         }
         
@@ -214,46 +236,48 @@ const renderEvents = async (events) =>
             }
             
             // Create blocks for each hour on this day
-            for (let hour = hourStart; hour <= hourEnd; hour++) {
+            for (let hour = hourStart; hour <= hourEnd; hour++) 
+            {
                 const slot = grid.querySelector(`.grid-slot[data-day="${dayIndex}"][data-hour="${hour}"]`);
-                if (slot) {
-                const eventBlock = document.createElement('div');
-                eventBlock.classList.add('event-block');
                 
-                // Format start and end times
-                const startTime = new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                const endTime = new Date(event.end_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-                
-                // Event content
-                let eventContent = `${startTime} - ${endTime} | ${event.title}`;
-                if (event.location) {
-                    eventContent += `\n${event.location}`;
-                }
-                
-                eventBlock.innerText = eventContent;
-
-                const editButton = document.createElement('button');
-                editButton.classList.add('edit-event-btn');
-                editButton.innerText = '✎';
-                editButton.onclick = (e) =>
+                if (slot) 
                 {
-                    e.preventDefault();
-                    openEditModal(event);
-                    e.stopPropagation(); // Prevent triggering slot click
-                }
+                    const eventBlock = document.createElement('div');
+                    eventBlock.classList.add('event-block');
+                    
+                    // Format start and end times
+                    const startTime = new Date(event.start).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    const endTime = new Date(event.end_time).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                    
+                    // Event content
+                    let eventContent = `${startTime} - ${endTime} | ${event.title}`;
+                    if (event.location)
+                        eventContent += `\n${event.location}`;
+                    
+                    eventBlock.innerText = eventContent;
 
-                const deleteButton = document.createElement('button');
-                deleteButton.classList.add('delete-event-btn');
-                deleteButton.innerText = 'X';
-                deleteButton.onclick = (e) => 
-                {
-                    deleteEvent(event.id);
-                    e.stopPropagation();
-                };
-                eventBlock.appendChild(editButton);
-                eventBlock.appendChild(deleteButton);
+                    const editButton = document.createElement('button');
+                    editButton.classList.add('edit-event-btn');
+                    editButton.innerText = '✎';
+                    editButton.onclick = (e) =>
+                    {
+                        e.preventDefault();
+                        openEditModal(event);
+                        e.stopPropagation(); // Prevent triggering slot click
+                    }
 
-                slot.appendChild(eventBlock);
+                    const deleteButton = document.createElement('button');
+                    deleteButton.classList.add('delete-event-btn');
+                    deleteButton.innerText = 'X';
+                    deleteButton.onclick = (e) => 
+                    {
+                        deleteEvent(event.id);
+                        e.stopPropagation();
+                    };
+                    eventBlock.appendChild(editButton);
+                    eventBlock.appendChild(deleteButton);
+
+                    slot.appendChild(eventBlock);
                 }
             }
         }
@@ -389,6 +413,13 @@ const handleEventSubmit = async () =>
     if (!end_time)
     {
         end_time = start;
+    }
+
+    // Validate end time is not before start time
+    if (new Date(end_time) < new Date(start)) 
+    {
+        alert('End time cannot be before start time.');
+        return;
     }
 
     try 
