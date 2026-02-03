@@ -35,6 +35,7 @@ const crypto = require('crypto'); // for UUID generation
 const CryptoJS = require('crypto-js'); // for AES-128 encryption/decryption
 const bcrypt = require('bcrypt'); // for password hashing and comparison
 const express = require('express'); // for backend server
+const cors = require('cors'); // for CORS policy
 const session = require('express-session'); // for session/cookie handling
 const fs = require('fs'); // for reading user_instructions
 const path = require('path'); // for path joining
@@ -43,15 +44,21 @@ const databaseHandler = require('./databaseHandler'); // Database backend Handle
 const { fetchTimetable } = require('./gettimetable'); // Timetable scraper module
 
 const app = express();
+
+// CORS configuration - allow requests from React app
+app.use(cors({
+    origin: 'http://localhost:3000',
+    credentials: true
+}));
+
 app.use(express.json()); // for parsing application/json
 app.use(express.urlencoded({ extended: true })); 
-app.use(express.static('public')); // for serving static files
+// Old static files removed - React app now runs on localhost:3000
 
 /* 
 Brief: Express Session Middleware
 
 Source: https://www.youtube.com/watch?v=OH6Z0dJ_Huk 
-My familiarity with express-session was limited.
 */
 app.use(session({
     secret: SESSION_SECRET, // "THE-SECRET-KEY-IS-A-SECRET" (Temporarily put here as a placeholder while dev)
@@ -137,9 +144,10 @@ app.post('/auth/login', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Request body is empty' });
     }
 
-    // If already logged in, redirect to dashboard
+    // If already logged in, return success
     if (req.session && req.session.userId) {
-        return res.redirect('/dashboard.html');
+        const userEmail = await databaseHandler.getUserEmailById(req.session.userId);
+        return res.json({ success: true, userId: req.session.userId, email: userEmail });
     }
 
     const { email, password } = req.body;
@@ -190,9 +198,10 @@ app.post('/auth/register', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Request body is empty' });
     }
 
-    // If already logged in, redirect to dashboard
+    // If already logged in, return success
     if (req.session && req.session.userId) {
-        return res.redirect('/dashboard.html');
+        const userEmail = await databaseHandler.getUserEmailById(req.session.userId);
+        return res.json({ success: true, userId: req.session.userId, email: userEmail });
     }
 
     const { email, password } = req.body;
@@ -692,6 +701,53 @@ app.post('/user/del-acc/', async (req, res) =>
     catch (error) 
     {
         console.error('Error deleting account:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+/*
+Brief: Get User Settings
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON with user settings
+*/
+app.get('/user/settings', async (req, res) => 
+{
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    try {
+        const settings = await databaseHandler.getUserSettings(req.session.userId);
+        return res.json({ success: true, settings });
+    } catch (error) {
+        console.error('Error fetching settings:', error);
+        return res.status(500).json({ success: false, error: 'Server error' });
+    }
+});
+
+/*
+Brief: Update User Settings
+@Param1: req - HTTP Request Object
+@Param2: res - HTTP Response Object
+@Return: JSON success message
+*/
+app.patch('/user/settings', async (req, res) => 
+{
+    if (!req.session || !req.session.userId) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    try {
+        const success = await databaseHandler.updateUserSettings(req.session.userId, req.body);
+        
+        if (success) {
+            return res.json({ success: true, message: 'Settings updated successfully' });
+        } else {
+            return res.status(500).json({ success: false, error: 'Failed to update settings' });
+        }
+    } catch (error) {
+        console.error('Error updating settings:', error);
         return res.status(500).json({ success: false, error: 'Server error' });
     }
 });

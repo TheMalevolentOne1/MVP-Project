@@ -397,5 +397,133 @@ const deleteAccount = async (uuid) =>
     }
 }
 
+/*
+Brief: Get user settings
+@Param1 uuid - User's UUID
+
+@Return: Settings object or defaults
+*/
+const getUserSettings = async (uuid) => 
+{
+    try {
+        const [rows] = await pool.query(
+            'SELECT * FROM user_settings WHERE uuid = ? LIMIT 1',
+            [uuid]
+        );
+        
+        if (rows.length > 0) {
+            return rows[0];
+        }
+        
+        // Return defaults if no settings exist
+        return {
+            theme: 'light',
+            notifications_enabled: true,
+            calendar_default_view: 'week',
+            time_format: '12h',
+            date_format: 'MM/DD/YYYY',
+            language: 'en'
+        };
+    } catch (err) {
+        console.error('Error fetching user settings:', err);
+        throw err;
+    }
+}
+
+/*
+Brief: Update user settings
+@Param1 uuid - User's UUID
+@Param2 settings - Settings object to update
+
+@Return: Success boolean
+*/
+const updateUserSettings = async (uuid, settings) => 
+{
+    try {
+        // Check if settings exist
+        const [existing] = await pool.query(
+            'SELECT uuid FROM user_settings WHERE uuid = ? LIMIT 1',
+            [uuid]
+        );
+        
+        if (existing.length === 0) {
+            // Create new settings row
+            await pool.execute(
+                `INSERT INTO user_settings (uuid, theme, notifications_enabled, calendar_default_view, time_format, date_format, language) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [
+                    uuid,
+                    settings.theme || 'light',
+                    settings.notifications_enabled !== undefined ? settings.notifications_enabled : true,
+                    settings.calendar_default_view || 'week',
+                    settings.time_format || '12h',
+                    settings.date_format || 'MM/DD/YYYY',
+                    settings.language || 'en'
+                ]
+            );
+        } else {
+            // Update existing settings
+            const updates = [];
+            const values = [];
+            
+            if (settings.theme) {
+                updates.push('theme = ?');
+                values.push(settings.theme);
+            }
+            if (settings.notifications_enabled !== undefined) {
+                updates.push('notifications_enabled = ?');
+                values.push(settings.notifications_enabled);
+            }
+            if (settings.calendar_default_view) {
+                updates.push('calendar_default_view = ?');
+                values.push(settings.calendar_default_view);
+            }
+            if (settings.time_format) {
+                updates.push('time_format = ?');
+                values.push(settings.time_format);
+            }
+            if (settings.date_format) {
+                updates.push('date_format = ?');
+                values.push(settings.date_format);
+            }
+            if (settings.language) {
+                updates.push('language = ?');
+                values.push(settings.language);
+            }
+            
+            if (updates.length > 0) {
+                values.push(uuid);
+                await pool.execute(
+                    `UPDATE user_settings SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE uuid = ?`,
+                    values
+                );
+            }
+        }
+        
+        return true;
+    } catch (err) {
+        console.error('Error updating user settings:', err);
+        return false;
+    }
+}
+
 // Export functions
-module.exports = { verifyUserEmail, addNewUser, getUserEmailById, createNote, editNoteContent, deleteNote, getUserNotes, getNoteByTitle, doesNoteExist, getUserEvents, createEvent, editEvent, deleteEvent, doesEventExist, deleteAccount };
+module.exports = { 
+    verifyUserEmail, 
+    addNewUser, 
+    getUserEmailById, 
+    createNote, 
+    editNoteContent, 
+    deleteNote, 
+    getUserNotes, 
+    getNoteByTitle, 
+    doesNoteExist, 
+    getUserEvents, 
+    createEvent, 
+    editEvent, 
+    deleteEvent, 
+    doesEventExist, 
+    deleteAccount,
+    getUserSettings,
+    updateUserSettings
+};
