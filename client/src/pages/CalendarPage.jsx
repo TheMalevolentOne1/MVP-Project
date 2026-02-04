@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { eventsAPI } from '../apiHandler';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
@@ -75,14 +76,14 @@ const CalendarPage = () => {
         try {
             const { data } = await eventsAPI.delete(deleteConfirm.eventId);
             if (data.success) {
-                console.log('Event deleted:', deleteConfirm.eventId);
+                toast.success('Event deleted');
                 fetchEvents();
             } else {
-                alert('Failed to delete event: ' + data.error);
+                toast.error('Failed to delete event: ' + data.error);
             }
         } catch (error) {
             console.error('Error deleting event:', error);
-            alert('Error deleting event');
+            toast.error('Error deleting event');
         } finally {
             setDeleteConfirm({ isOpen: false, eventId: null });
         }
@@ -99,15 +100,14 @@ const CalendarPage = () => {
             }
 
             if (response.data.success) {
-                console.log(eventId ? 'Event updated' : 'Event created');
-                alert(eventId ? 'Event Updated' : 'Event Created');
+                toast.success(eventId ? 'Event updated' : 'Event created');
                 fetchEvents();
             } else {
-                alert('Failed to save event: ' + response.data.error);
+                toast.error('Failed to save event: ' + response.data.error);
             }
         } catch (error) {
             console.error('Error saving event:', error);
-            alert('Error saving event');
+            toast.error('Error saving event');
         }
     };
 
@@ -120,7 +120,7 @@ const CalendarPage = () => {
             const { data } = await eventsAPI.syncTimetable(email, password);
             
             if (data.success) {
-                alert(`✓ Timetable Import Complete\n\nImported: ${data.imported} events`);
+                toast.success(`Imported ${data.imported} events from timetable`);
                 fetchEvents(); // Refresh calendar
             } else {
                 throw new Error(data.error || 'Failed to import timetable');
@@ -146,9 +146,10 @@ const CalendarPage = () => {
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
+            toast.success('Calendar exported');
         } catch (error) {
             console.error('Error exporting ICS:', error);
-            alert('Failed to export calendar');
+            toast.error('Failed to export calendar');
         }
     };
 
@@ -159,13 +160,13 @@ const CalendarPage = () => {
 
         // Client-side validation
         if (!file.name.endsWith('.ics')) {
-            alert('Please select a valid .ics file');
+            toast.error('Please select a valid .ics file');
             event.target.value = '';
             return;
         }
 
         if (file.size > 1024 * 1024) {
-            alert('File too large. Maximum size is 1MB.');
+            toast.error('File too large. Maximum size is 1MB.');
             event.target.value = '';
             return;
         }
@@ -177,21 +178,17 @@ const CalendarPage = () => {
             const { data } = await eventsAPI.importICS(formData);
             
             if (data.success) {
-                let message = `✓ Import Complete\n\nImported: ${data.imported} events`;
+                toast.success(`Imported ${data.imported} events`);
                 if (data.errors && data.errors.length > 0) {
-                    message += `\n\nWarnings:\n${data.errors.slice(0, 3).join('\n')}`;
-                    if (data.errors.length > 3) {
-                        message += `\n...and ${data.errors.length - 3} more`;
-                    }
+                    toast(`${data.errors.length} events had warnings`, { icon: '⚠️' });
                 }
-                alert(message);
                 fetchEvents();
             } else {
-                alert('Import failed: ' + data.error);
+                toast.error('Import failed: ' + data.error);
             }
         } catch (error) {
             console.error('Error importing ICS:', error);
-            alert(error.response?.data?.error || 'Failed to import calendar');
+            toast.error(error.response?.data?.error || 'Failed to import calendar');
         } finally {
             event.target.value = ''; // Reset file input
         }

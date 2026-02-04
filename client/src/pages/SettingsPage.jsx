@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { authAPI, settingsAPI } from '../apiHandler';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
@@ -18,7 +19,6 @@ const SettingsPage = () => {
         date_format: 'MM/DD/YYYY'
     }));
     const [loading, setLoading] = useState(true);
-    const [saveMessage, setSaveMessage] = useState('');
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const fetchSettings = useCallback(async () => {
@@ -48,7 +48,6 @@ const SettingsPage = () => {
 
     const handleChange = (field, value) => {
         setSettings(prev => ({ ...prev, [field]: value }));
-        setSaveMessage('');
         
         // Apply theme change immediately
         if (field === 'theme') {
@@ -64,18 +63,17 @@ const SettingsPage = () => {
             // Save to backend
             const { data } = await settingsAPI.update(settings);
             if (data.success) {
-                setSaveMessage('Settings saved successfully!');
-                setTimeout(() => setSaveMessage(''), 3000);
+                toast.success('Settings saved!');
             } else {
-                setSaveMessage(data.error || 'Failed to save settings');
+                toast.error(data.error || 'Failed to save settings');
             }
         } catch (error) {
             console.error('Error saving settings:', error);
             if (error.response?.status === 401) {
-                setSaveMessage('Session expired. Please log in again.');
+                toast.error('Session expired. Please log in again.');
                 setTimeout(() => navigate('/login'), 2000);
             } else {
-                setSaveMessage(error.response?.data?.error || 'Error saving settings');
+                toast.error(error.response?.data?.error || 'Error saving settings');
             }
         }
     };
@@ -88,14 +86,15 @@ const SettingsPage = () => {
         try {
             const { data } = await authAPI.deleteAccount();
             if (data.success) {
+                toast.success('Account deleted');
                 await logout();
                 navigate('/');
             } else {
-                alert('Failed to delete account: ' + (data.error || 'Unknown error'));
+                toast.error('Failed to delete account: ' + (data.error || 'Unknown error'));
             }
         } catch (error) {
             console.error('Error deleting account:', error);
-            alert('An error occurred while deleting your account.');
+            toast.error('An error occurred while deleting your account.');
         }
     };
 
@@ -167,7 +166,6 @@ const SettingsPage = () => {
                         <button onClick={handleSave} className="save-btn">
                             Save Settings
                         </button>
-                        {saveMessage && <span className="save-message">{saveMessage}</span>}
                     </div>
 
                     {/* Danger Zone */}

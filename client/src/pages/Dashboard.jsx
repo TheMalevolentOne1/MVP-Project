@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { notesAPI, eventsAPI } from '../apiHandler';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
@@ -52,9 +53,10 @@ const Dashboard = () => {
         try {
             await eventsAPI.delete(deleteConfirm.eventId);
             loadDashboardData();
+            toast.success('Event deleted');
         } catch (error) {
             console.error('Failed to delete event:', error);
-            alert('Failed to delete event');
+            toast.error('Failed to delete event');
         } finally {
             setDeleteConfirm({ isOpen: false, eventId: null });
         }

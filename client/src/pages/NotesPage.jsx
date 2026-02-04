@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import toast from 'react-hot-toast';
 import { notesAPI } from '../apiHandler';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
@@ -118,7 +120,7 @@ const NotesPage = () => {
 
     const handleSaveNote = async () => {
         if (!title || !content) {
-            alert('Please enter title and content');
+            toast.error('Please enter title and content');
             return;
         }
 
@@ -132,8 +134,9 @@ const NotesPage = () => {
             setInitialTitle(title);
             setInitialContent(content);
             setHasUnsavedChanges(false);
+            toast.success('Note saved!');
         } catch (error) {
-            alert('Failed to save note: ' + error.message);
+            toast.error('Failed to save note: ' + error.message);
         }
     };
 
@@ -151,8 +154,9 @@ const NotesPage = () => {
             await notesAPI.delete(confirmModal.data.title);
             fetchNotes();
             clearEditor();
+            toast.success('Note deleted');
         } catch (error) {
-            alert('Failed to delete note');
+            toast.error('Failed to delete note');
         } finally {
             setConfirmModal({ isOpen: false, type: '', data: null });
         }
@@ -183,7 +187,7 @@ const NotesPage = () => {
 
     const handleDownloadNote = () => {
         if (!title || !content) {
-            alert('Please enter title and content to download');
+            toast.error('Please enter title and content to download');
             return;
         }
 
@@ -194,6 +198,7 @@ const NotesPage = () => {
         document.body.appendChild(element);
         element.click();
         document.body.removeChild(element);
+        toast.success('Note downloaded');
     };
 
     return (
@@ -259,7 +264,7 @@ const NotesPage = () => {
                     <div className="notes-content">
                         {isPreview ? (
                             <div className="notes-preview">
-                                <ReactMarkdown>{content}</ReactMarkdown>
+                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                             </div>
                         ) : (
                             <textarea
