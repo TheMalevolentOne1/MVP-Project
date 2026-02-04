@@ -5,6 +5,7 @@ import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
 import EventModal from '../components/EventModal';
 import TimetableModal from '../components/TimetableModal';
+import ConfirmModal from '../components/ConfirmModal';
 import './CalendarPage.css';
 
 const DAYS_IN_WEEK = 7;
@@ -64,15 +65,17 @@ const CalendarPage = () => {
         setShowModal(true);
     };
 
-    const handleDeleteEvent = async (eventId) => {
-        if (!window.confirm('Delete this event?')) {
-            return;
-        }
+    const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, eventId: null });
 
+    const handleDeleteEvent = (eventId) => {
+        setDeleteConfirm({ isOpen: true, eventId });
+    };
+
+    const confirmDeleteEvent = async () => {
         try {
-            const { data } = await eventsAPI.delete(eventId);
+            const { data } = await eventsAPI.delete(deleteConfirm.eventId);
             if (data.success) {
-                console.log('Event deleted:', eventId);
+                console.log('Event deleted:', deleteConfirm.eventId);
                 fetchEvents();
             } else {
                 alert('Failed to delete event: ' + data.error);
@@ -80,6 +83,8 @@ const CalendarPage = () => {
         } catch (error) {
             console.error('Error deleting event:', error);
             alert('Error deleting event');
+        } finally {
+            setDeleteConfirm({ isOpen: false, eventId: null });
         }
     };
 
@@ -123,6 +128,72 @@ const CalendarPage = () => {
         } catch (error) {
             console.error('Timetable sync error:', error);
             throw new Error(error.response?.data?.error || 'Failed to import timetable');
+        }
+    };
+
+    // ICS Export handler
+    const handleExportICS = async () => {
+        try {
+            const response = await eventsAPI.exportICS();
+            
+            // Create download link
+            const blob = new Blob([response.data], { type: 'text/calendar' });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'asc-calendar.ics';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Error exporting ICS:', error);
+            alert('Failed to export calendar');
+        }
+    };
+
+    // ICS Import handler
+    const handleImportICS = async (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        // Client-side validation
+        if (!file.name.endsWith('.ics')) {
+            alert('Please select a valid .ics file');
+            event.target.value = '';
+            return;
+        }
+
+        if (file.size > 1024 * 1024) {
+            alert('File too large. Maximum size is 1MB.');
+            event.target.value = '';
+            return;
+        }
+
+        try {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            const { data } = await eventsAPI.importICS(formData);
+            
+            if (data.success) {
+                let message = `✓ Import Complete\n\nImported: ${data.imported} events`;
+                if (data.errors && data.errors.length > 0) {
+                    message += `\n\nWarnings:\n${data.errors.slice(0, 3).join('\n')}`;
+                    if (data.errors.length > 3) {
+                        message += `\n...and ${data.errors.length - 3} more`;
+                    }
+                }
+                alert(message);
+                fetchEvents();
+            } else {
+                alert('Import failed: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error importing ICS:', error);
+            alert(error.response?.data?.error || 'Failed to import calendar');
+        } finally {
+            event.target.value = ''; // Reset file input
         }
     };
 
@@ -299,6 +370,20 @@ const CalendarPage = () => {
                     <button className="timetable-btn" onClick={handleExtractTimetable}>
                         📚 Import Timetable
                     </button>
+                    <div className="ics-controls">
+                        <button className="ics-btn export" onClick={handleExportICS} title="Export to ICS">
+                            📤 Export
+                        </button>
+                        <label className="ics-btn import" title="Import from ICS">
+                            📥 Import
+                            <input
+                                type="file"
+                                accept=".ics"
+                                onChange={handleImportICS}
+                                style={{ display: 'none' }}
+                            />
+                        </label>
+                    </div>
                 </div>
 
                 <div className="calendar-scroll-area">
@@ -322,6 +407,17 @@ const CalendarPage = () => {
                 isOpen={showTimetableModal}
                 onClose={() => setShowTimetableModal(false)}
                 onSubmit={handleTimetableSubmit}
+            />
+
+            <ConfirmModal
+                isOpen={deleteConfirm.isOpen}
+                title="Delete Event"
+                message="Are you sure you want to delete this event?"
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmStyle="danger"
+                onConfirm={confirmDeleteEvent}
+                onCancel={() => setDeleteConfirm({ isOpen: false, eventId: null })}
             />
         </div>
     );

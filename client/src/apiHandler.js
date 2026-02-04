@@ -37,7 +37,11 @@ export const eventsAPI = {
     update: (id, event) => api.patch(`/user/events/${id}`, event),
     delete: (id) => api.delete(`/user/events/${id}`),
     syncTimetable: (email, password, startDate) => 
-        api.post('/user/timetable/sync', { email, password, startDate })
+        api.post('/user/timetable/sync', { email, password, startDate }),
+    importICS: (formData) => api.post('/user/events/import-ics', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+    }),
+    exportICS: () => api.get('/user/events/export-ics', { responseType: 'blob' })
 };
 
 // Settings API

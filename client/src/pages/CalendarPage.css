@@ -64,6 +64,48 @@
     box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
 }
 
+.ics-controls {
+    display: flex;
+    gap: 8px;
+    margin-left: auto;
+}
+
+.ics-btn {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    color: white;
+    border: none;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.ics-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.ics-btn.export {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+}
+
+.ics-btn.export:hover {
+    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+}
+
+.ics-btn.import {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+}
+
+.ics-btn.import:hover {
+    box-shadow: 0 4px 12px rgba(230, 126, 34, 0.4);
+}
+
 .calendar-scroll-area {
     overflow-x: auto;
     background: white;

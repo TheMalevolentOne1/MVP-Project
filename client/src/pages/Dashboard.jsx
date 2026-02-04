@@ -4,6 +4,7 @@ import { notesAPI, eventsAPI } from '../apiHandler';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
 import DashboardModal from '../components/DashboardModal';
+import ConfirmModal from '../components/ConfirmModal';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -13,6 +14,7 @@ const Dashboard = () => {
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState('note');
+    const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, eventId: null });
 
     useEffect(() => {
         loadDashboardData();
@@ -42,15 +44,19 @@ const Dashboard = () => {
         navigate(`/notes?note=${encodeURIComponent(noteTitle)}`);
     };
 
-    const handleEventDelete = async (eventId) => {
-        if (!window.confirm('Delete this event?')) return;
-        
+    const handleEventDelete = (eventId) => {
+        setDeleteConfirm({ isOpen: true, eventId });
+    };
+
+    const confirmEventDelete = async () => {
         try {
-            await eventsAPI.delete(eventId);
-            loadDashboardData(); // Refresh
+            await eventsAPI.delete(deleteConfirm.eventId);
+            loadDashboardData();
         } catch (error) {
             console.error('Failed to delete event:', error);
             alert('Failed to delete event');
+        } finally {
+            setDeleteConfirm({ isOpen: false, eventId: null });
         }
     };
 
@@ -155,6 +161,17 @@ const Dashboard = () => {
                 isOpen={modalOpen}
                 onClose={() => setModalOpen(false)}
                 type={modalType}
+            />
+
+            <ConfirmModal
+                isOpen={deleteConfirm.isOpen}
+                title="Delete Event"
+                message="Are you sure you want to delete this event?"
+                confirmText="Delete"
+                cancelText="Cancel"
+                confirmStyle="danger"
+                onConfirm={confirmEventDelete}
+                onCancel={() => setDeleteConfirm({ isOpen: false, eventId: null })}
             />
         </div>
     );

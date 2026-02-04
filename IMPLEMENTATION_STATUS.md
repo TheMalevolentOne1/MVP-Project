@@ -23,6 +23,9 @@
 - Download note as .md file (D button) ✓
 - 30 character title limit ✓
 - Note selection highlighting ✓
+- Unsaved changes warning ✓
+- beforeunload protection ✓
+- Keyboard shortcut: Ctrl+S to save ✓
 
 **Calendar Page**
 - Weekly view calendar ✓
@@ -30,9 +33,11 @@
 - Event modal with title, start, end, location, description ✓
 - Time-based grid layout (24 hours) ✓
 - Week navigation (prev/next) ✓
-- Event blocks with visual display ✓
-- Multi-day event support ✓
+- Continuous event blocks (events span full duration) ✓
 - Event editing functionality ✓
+- Timetable import UI + backend integration ✓
+- ICS Export (download .ics file) ✓
+- ICS Import (upload .ics file with security validation) ✓
 
 **Dashboard Page**
 - Recent notes (last 7 days) ✓
@@ -40,14 +45,26 @@
 - Quick stats display ✓
 - Click-through to notes ✓
 - Professional card layout ✓
+- Quick Actions: Create Note button ✓
+- Quick Actions: Create Event button ✓
+- Direct delete event from dashboard ✓
 
 **Settings Page**
 - Theme selection (light/dark/auto) ✓
 - Time format (12h/24h) ✓
 - Date format (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD) ✓
-- Language selection ✓
 - Save settings functionality ✓
-- Delete account (moved from auth endpoints) ✓
+- Session expiration handling ✓
+- Delete account (in Danger Zone) ✓
+
+**Theme System**
+- ThemeContext with light/dark/auto modes ✓
+- localStorage persistence ✓
+- System preference detection (auto mode) ✓
+- CSS variables for theming ✓
+- Dark mode for Calendar page ✓
+- Dark mode for Settings page ✓
+- Dark mode for base styles (index.css) ✓
 
 **UI/UX Improvements**
 - Consistent gradient theme (#667eea to #764ba2) ✓
@@ -57,79 +74,94 @@
 - Professional landing page with features ✓
 - Responsive design ✓
 
-### ⚠️ Partially Implemented / Different Approach
+### ⚠️ Partially Implemented / Needs Work
+
+**Dark Mode Coverage**
+- Dashboard.css - needs dark mode styles
+- NotesPage.css - needs dark mode styles  
+- Navbar.css - may need dark mode styles
+- EventModal.css - may need dark mode styles
+- TimetableModal.css - may need dark mode styles
 
 **Notes Page**
-- Original had "Clear" button (C) - React uses "New Note" approach (clears on +)
+- Original had "Clear" button (C) - React uses "New Note" approach
 - Original auto-saved on title selection - React requires explicit save
-- Original used CommonMark parser - React uses ReactMarkdown library
-
-**Calendar Page**
-- Original had "ULAN Timetable" button in header - Not yet in React
-- ICS export functionality - Not implemented in React
-- Timetable sync endpoint exists in backend but no UI in React
-
-**Settings Page**
-- Theme switching is UI-only (no actual dark/light theme CSS applied yet)
-- Notifications option removed (was in original plan but not in vanilla version)
-- Calendar default view option removed (not needed with current calendar)
 
 ### ❌ Missing Features (TODO)
 
-**High Priority**
-1. **Timetable Import**: Backend endpoint `/user/timetable/sync` exists but React UI missing
-   - Original had button in calendar.html header: `<button onclick="extractTimeTable()">ULAN TimeTable</button>`
-   - Function in calendar.js handles university portal scraping
-   - Need to add import button and modal in React CalendarPage
-
-2. **ICS Import/Export**: Mentioned in backend comments but not implemented
-   - Calendar events could be exported to .ics format
-   - Import from .ics files for cross-platform compatibility
-
-3. **Theme Implementation**: Settings page has theme selector but no actual CSS switching
-   - Need dark mode CSS variables
-   - Need theme context to apply across components
-   - localStorage to persist theme preference
-
-4. **Keyboard Shortcuts**: Original had Ctrl+S to save notes
-   - React should implement same shortcuts
-   - Could add more shortcuts (Ctrl+N for new note, etc.)
-
 **Medium Priority**
-5. **Auto-save**: Original vanilla version had auto-save on note selection
+1. **Auto-save**: Original vanilla version had auto-save on note selection
    - Consider implementing auto-save timer in React
-   - Or at minimum, unsaved changes warning
+   - Currently only has unsaved changes warning
 
-6. **Activity Visualization**: Dashboard comments mention future charts
+4. **Activity Visualization**: Dashboard comments mention future charts
    - Activity graph showing notes/events created over time
    - Could use Chart.js or Recharts library
 
-7. **Quick Actions**: Dashboard should have action buttons
-   - Create Note button → opens notes page
-   - Create Event button → opens calendar with modal
-   - Direct delete event from dashboard
-
-8. **Event Notifications**: Backend has notification column in user_settings
+5. **Event Notifications**: Backend has notification column in user_settings
    - Notification system for upcoming events
    - Browser notifications API integration
 
 **Low Priority**
-9. **Recurring Events**: Comments mention future feature
+6. **Recurring Events**: Comments mention future feature
    - Weekly/Monthly recurring event toggle
    - Backend database schema would need modification
 
-10. **Event Conflict Detection**: Overlapping events warning
-    - Visual indicator on calendar
-    - Alert when creating overlapping events
+7. **Event Conflict Detection**: Overlapping events warning
+   - Visual indicator on calendar
+   - Alert when creating overlapping events
 
-11. **Multi-day Event Rendering**: Backend supports it, visual could improve
-    - Current implementation works but could show continuous blocks
-    - Better visual for events spanning multiple days
+8. **Search Functionality**: Notes page could have search
+   - Filter notes by title/content
+   - Calendar could filter events by title
 
-12. **Search Functionality**: Notes page could have search
-    - Filter notes by title/content
-    - Calendar could filter events by title
+## Database Schema
+
+**user_settings table columns:**
+- uuid (PK, FK)
+- theme
+- notifications_enabled
+- calendar_default_view
+- time_format
+- date_format
+- created_at
+- updated_at
+
+## Libraries Used
+
+**Core Dependencies:**
+- React 18 with hooks
+- Express.js (backend)
+- MySQL (database)
+- express-session (authentication)
+
+**ICS Import/Export:**
+- `node-ical` - Parses .ics files for import
+- `ical-generator` - Creates .ics files for export
+- `multer` - Handles secure file uploads (1MB limit, .ics extension only)
+
+**Markdown:**
+- `react-markdown` - Renders markdown preview in Notes
 
 ## Summary
 
-The React implementation successfully replicates 90% of the vanilla JavaScript functionality with significant improvements in code organization, maintainability, and user experience. The component-based architecture using React hooks (useState, useEffect, useContext) provides better state management compared to the original DOM manipulation approach. Key missing features include the timetable import UI (backend ready), actual theme switching implementation, and keyboard shortcuts. The authentication flow now properly updates global context via useAuth hook, fixing the redirect issues. All CRUD operations for notes and events are functional and use the same backend endpoints. The download button has been restored to the Notes page (D button in action row). Priority focus should be on implementing the timetable import feature since the backend is already complete, followed by actual dark mode theme application and keyboard shortcut restoration.
+The React implementation successfully replicates **95%** of the vanilla JavaScript functionality with significant improvements:
+
+**Implemented since last review:**
+- ✅ Timetable Import UI (TimetableModal component)
+- ✅ Dark mode CSS for Calendar and Settings pages
+- ✅ Theme context with full light/dark/auto support
+- ✅ Quick Actions on Dashboard (Create Note/Event buttons)
+- ✅ Direct event deletion from Dashboard
+- ✅ Unsaved changes tracking in Notes
+- ✅ Continuous calendar event blocks
+- ✅ Session expiration handling
+- ✅ Keyboard shortcut: Ctrl+S to save notes
+- ✅ ConfirmModal component (replaces browser dialogs)
+- ✅ DeleteAccountModal component (two-step account deletion)
+- ✅ ICS Export (download calendar as .ics)
+- ✅ ICS Import (upload .ics with security validation)
+
+**Remaining priority items:**
+1. Dark mode for remaining pages (Dashboard, Notes, modals)
+2. Auto-save timer for notes

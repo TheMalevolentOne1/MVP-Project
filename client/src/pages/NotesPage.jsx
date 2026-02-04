@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown';
 import { notesAPI } from '../apiHandler';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
+import ConfirmModal from '../components/ConfirmModal';
 import './NotesPage.css';
 
 const NotesPage = () => {
@@ -16,6 +17,8 @@ const NotesPage = () => {
     const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
     const [initialTitle, setInitialTitle] = useState('');
     const [initialContent, setInitialContent] = useState('');
+    const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', data: null });
+    const [pendingNoteSelect, setPendingNoteSelect] = useState(null);
 
     useEffect(() => {
         fetchNotes();
@@ -23,11 +26,19 @@ const NotesPage = () => {
 
     const handleSelectNote = useCallback(async (noteTitle) => {
         if (hasUnsavedChanges) {
-            if (!window.confirm('You have unsaved changes. Do you want to discard them?')) {
-                return;
-            }
+            setPendingNoteSelect(noteTitle);
+            setConfirmModal({
+                isOpen: true,
+                type: 'switch',
+                data: null
+            });
+            return;
         }
 
+        await loadNote(noteTitle);
+    }, [hasUnsavedChanges]);
+
+    const loadNote = async (noteTitle) => {
         try {
             const { data } = await notesAPI.getByTitle(noteTitle);
             if (data.success) {
@@ -41,7 +52,15 @@ const NotesPage = () => {
         } catch (error) {
             console.error('Failed to load note:', error);
         }
-    }, [hasUnsavedChanges]);
+    };
+
+    const confirmSwitchNote = async () => {
+        setConfirmModal({ isOpen: false, type: '', data: null });
+        if (pendingNoteSelect) {
+            await loadNote(pendingNoteSelect);
+            setPendingNoteSelect(null);
+        }
+    };
 
     useEffect(() => {
         // Check for note parameter in URL
@@ -70,6 +89,21 @@ const NotesPage = () => {
         window.addEventListener('beforeunload', handleBeforeUnload);
         return () => window.removeEventListener('beforeunload', handleBeforeUnload);
     }, [hasUnsavedChanges]);
+
+    // Keyboard shortcuts: Ctrl+S to save
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if (e.ctrlKey && e.key === 's') {
+                e.preventDefault();
+                if (title && content) {
+                    handleSaveNote();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => window.removeEventListener('keydown', handleKeyDown);
+    });
 
     const fetchNotes = async () => {
         try {
@@ -103,25 +137,35 @@ const NotesPage = () => {
         }
     };
 
-    const handleDeleteNote = async () => {
+    const handleDeleteNote = () => {
         if (!selectedNote) return;
-        
-        if (window.confirm(`Delete note "${selectedNote.title}"?`)) {
-            try {
-                await notesAPI.delete(selectedNote.title);
-                fetchNotes();
-                clearEditor();
-            } catch (error) {
-                alert('Failed to delete note');
-            }
+        setConfirmModal({
+            isOpen: true,
+            type: 'delete',
+            data: { title: selectedNote.title }
+        });
+    };
+
+    const confirmDeleteNote = async () => {
+        try {
+            await notesAPI.delete(confirmModal.data.title);
+            fetchNotes();
+            clearEditor();
+        } catch (error) {
+            alert('Failed to delete note');
+        } finally {
+            setConfirmModal({ isOpen: false, type: '', data: null });
         }
     };
 
-    const clearEditor = () => {
-        if (hasUnsavedChanges) {
-            if (!window.confirm('You have unsaved changes. Do you want to discard them?')) {
-                return;
-            }
+    const clearEditor = (force = false) => {
+        if (hasUnsavedChanges && !force) {
+            setConfirmModal({
+                isOpen: true,
+                type: 'discard',
+                data: null
+            });
+            return;
         }
         
         setSelectedNote(null);
@@ -130,6 +174,11 @@ const NotesPage = () => {
         setInitialTitle('');
         setInitialContent('');
         setHasUnsavedChanges(false);
+    };
+
+    const confirmDiscard = () => {
+        setConfirmModal({ isOpen: false, type: '', data: null });
+        clearEditor(true);
     };
 
     const handleDownloadNote = () => {
@@ -223,6 +272,28 @@ const NotesPage = () => {
                     </div>
                 </main>
             </div>
+
+            <ConfirmModal
+                isOpen={confirmModal.isOpen}
+                title={confirmModal.type === 'delete' ? 'Delete Note' : 'Discard Changes'}
+                message={confirmModal.type === 'delete' 
+                    ? `Are you sure you want to delete "${confirmModal.data?.title}"?` 
+                    : 'You have unsaved changes. Do you want to discard them?'}
+                confirmText={confirmModal.type === 'delete' ? 'Delete' : 'Discard'}
+                cancelText="Cancel"
+                confirmStyle="danger"
+                onConfirm={
+                    confirmModal.type === 'delete' 
+                        ? confirmDeleteNote 
+                        : confirmModal.type === 'switch'
+                            ? confirmSwitchNote
+                            : confirmDiscard
+                }
+                onCancel={() => {
+                    setConfirmModal({ isOpen: false, type: '', data: null });
+                    setPendingNoteSelect(null);
+                }}
+            />
         </div>
     );
 };

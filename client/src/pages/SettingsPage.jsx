@@ -5,6 +5,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../contexts/ThemeContext';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
+import DeleteAccountModal from '../components/DeleteAccountModal';
 import './SettingsPage.css';
 
 const SettingsPage = () => {
@@ -18,6 +19,7 @@ const SettingsPage = () => {
     }));
     const [loading, setLoading] = useState(true);
     const [saveMessage, setSaveMessage] = useState('');
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const fetchSettings = useCallback(async () => {
         try {
@@ -78,36 +80,14 @@ const SettingsPage = () => {
         }
     };
 
-    const handleDeleteAccount = async () => {
-        const confirmEmail = prompt('To confirm account deletion, please enter your email:');
-        
-        if (!confirmEmail) {
-            return;
-        }
+    const handleDeleteAccount = () => {
+        setShowDeleteModal(true);
+    };
 
-        if (confirmEmail !== user?.email) {
-            alert('Email does not match. Account deletion cancelled.');
-            return;
-        }
-
-        const finalConfirm = window.confirm(
-            '⚠️ WARNING: This action is PERMANENT and CANNOT be undone.\n\n' +
-            'All your data including:\n' +
-            '• Notes\n' +
-            '• Calendar events\n' +
-            '• Settings\n\n' +
-            'Will be permanently deleted.\n\n' +
-            'Are you absolutely sure you want to delete your account?'
-        );
-
-        if (!finalConfirm) {
-            return;
-        }
-
+    const confirmDeleteAccount = async () => {
         try {
             const { data } = await authAPI.deleteAccount();
             if (data.success) {
-                alert('Your account has been permanently deleted.');
                 await logout();
                 navigate('/');
             } else {
@@ -205,6 +185,13 @@ const SettingsPage = () => {
                     </section>
                 </div>
             </main>
+
+            <DeleteAccountModal
+                isOpen={showDeleteModal}
+                onConfirm={confirmDeleteAccount}
+                onCancel={() => setShowDeleteModal(false)}
+                userEmail={user?.email}
+            />
         </div>
     );
 };
