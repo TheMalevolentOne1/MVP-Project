@@ -1,8 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 
-const ThemeContext = createContext();
-
-export const ThemeProvider = ({ children }) => {
+export const useTheme = () => {
     const [theme, setTheme] = useState(() => {
         // Check localStorage first
         const savedTheme = localStorage.getItem('theme');
@@ -42,11 +40,13 @@ export const ThemeProvider = ({ children }) => {
         }
     }, []);
 
-    const changeTheme = (newTheme) => {
+    const changeTheme = (newTheme) => 
+    {
         // Always store the preference (including 'auto')
         localStorage.setItem('theme', newTheme);
         
-        if (newTheme === 'auto') {
+        if (newTheme === 'auto') 
+        {
             // Apply current system preference immediately
             const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             setTheme(isDark ? 'dark' : 'light');
@@ -60,17 +60,5 @@ export const ThemeProvider = ({ children }) => {
         return localStorage.getItem('theme') || 'light';
     };
 
-    return (
-        <ThemeContext.Provider value={{ theme, changeTheme, getThemePreference }}>
-            {children}
-        </ThemeContext.Provider>
-    );
-};
-
-export const useTheme = () => {
-    const context = useContext(ThemeContext);
-    if (!context) {
-        throw new Error('useTheme must be used within ThemeProvider');
-    }
-    return context;
+    return { theme, changeTheme, getThemePreference };
 };

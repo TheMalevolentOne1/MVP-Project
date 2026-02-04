@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { authAPI, settingsAPI } from '../apiHandler';
 import { useAuth } from '../hooks/useAuth';
-import { useTheme } from '../contexts/ThemeContext';
+import { useTheme } from '../hooks/useTheme';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
 import DeleteAccountModal from '../components/DeleteAccountModal';

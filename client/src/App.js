@@ -2,7 +2,6 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider, useAuth } from './hooks/useAuth';
-import { ThemeProvider } from './contexts/ThemeContext';
 import './App.css';
 
 // Page imports
@@ -55,7 +54,6 @@ function App() {
                     },
                 }}
             />
-            <ThemeProvider>
                 <AuthProvider>
                     <Routes>
                         {/* Public Routes */}
@@ -70,7 +68,6 @@ function App() {
                         <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
                     </Routes>
                 </AuthProvider>
-            </ThemeProvider>
         </BrowserRouter>
     );
 }
