@@ -2,7 +2,10 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import toast from 'react-hot-toast';
+import { FiPlus, FiTrash2, FiSave, FiDownload, FiEdit, FiEye } from 'react-icons/fi';
 import { notesAPI } from '../apiHandler';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
@@ -210,10 +213,10 @@ const NotesPage = () => {
                 {/* Sidebar */}
                 <aside className="notes-sidebar">
                     <div className="search-row">
-                        <button onClick={clearEditor} title="New Note">+</button>
-                        <button onClick={handleDeleteNote} title="Delete">-</button>
-                        <button onClick={handleSaveNote} title="Save">S</button>
-                        <button onClick={handleDownloadNote} title="Download">D</button>
+                        <button onClick={clearEditor} title="New Note"><FiPlus /></button>
+                        <button onClick={handleDeleteNote} title="Delete"><FiTrash2 /></button>
+                        <button onClick={handleSaveNote} title="Save"><FiSave /></button>
+                        <button onClick={handleDownloadNote} title="Download"><FiDownload /></button>
                     </div>
                     
                     <div className="notes-list">
@@ -237,13 +240,13 @@ const NotesPage = () => {
                             className={isPreview ? 'active' : ''}
                             onClick={() => setIsPreview(true)}
                         >
-                            Preview
+                            <FiEye /> Preview
                         </button>
                         <button
                             className={!isPreview ? 'active' : ''}
                             onClick={() => setIsPreview(false)}
                         >
-                            Edit
+                            <FiEdit /> Edit
                         </button>
                     </div>
 
@@ -264,7 +267,40 @@ const NotesPage = () => {
                     <div className="notes-content">
                         {isPreview ? (
                             <div className="notes-preview">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
+                                <ReactMarkdown 
+                                    remarkPlugins={[remarkGfm]}
+                                    components={{
+                                        code({ node, inline, className, children, ...props }) {
+                                            const match = /language-(\w+)/.exec(className || '');
+                                            return !inline && match ? (
+                                                <SyntaxHighlighter
+                                                    style={vscDarkPlus}
+                                                    language={match[1]}
+                                                    PreTag="div"
+                                                    {...props}
+                                                >
+                                                    {String(children).replace(/\n$/, '')}
+                                                </SyntaxHighlighter>
+                                            ) : (
+                                                <code className={className} {...props}>
+                                                    {children}
+                                                </code>
+                                            );
+                                        },
+                                        img({ src, alt, ...properties }) {
+                                            return (
+                                                <img 
+                                                    src={src} 
+                                                    alt={alt || 'Image'} 
+                                                    className="notes-image"
+                                                    {...properties}
+                                                />
+                                            );
+                                        }
+                                    }}
+                                >
+                                    {content}
+                                </ReactMarkdown>
                             </div>
                         ) : (
                             <textarea

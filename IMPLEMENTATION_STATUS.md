@@ -38,6 +38,9 @@
 - Timetable import UI + backend integration ✓
 - ICS Export (download .ics file) ✓
 - ICS Import (upload .ics file with security validation) ✓
+- **Event Conflict Prevention**: Backend duplicate detection ✓
+  - Prevents identical events (same title, start, end, user) ✓
+  - Returns 409 error with descriptive message ✓
 
 **Dashboard Page**
 - Recent notes (last 7 days) ✓
@@ -53,9 +56,20 @@
 - Theme selection (light/dark/auto) ✓
 - Time format (12h/24h) ✓
 - Date format (MM/DD/YYYY, DD/MM/YYYY, YYYY-MM-DD) ✓
+- Email notifications toggle ✓
+- Timezone setting ✓
 - Save settings functionality ✓
 - Session expiration handling ✓
 - Delete account (in Danger Zone) ✓
+- **FIXED:** Database column mismatch errors (Feb 2026) ✓
+- **FIXED:** ESLint errors in SettingsPage and CalendarPage ✓
+
+**User Notifications System**
+- Toast notifications via react-hot-toast ✓
+- Success/Error feedback for all CRUD operations ✓
+- Settings save confirmations ✓
+- Login/Logout notifications ✓
+- Import/Export status notifications ✓
 
 **Theme System**
 - ThemeContext with light/dark/auto modes ✓
@@ -98,18 +112,11 @@
    - Activity graph showing notes/events created over time
    - Could use Chart.js or Recharts library
 
-5. **Event Notifications**: Backend has notification column in user_settings
-   - Notification system for upcoming events
-   - Browser notifications API integration
 
 **Low Priority**
 6. **Recurring Events**: Comments mention future feature
    - Weekly/Monthly recurring event toggle
    - Backend database schema would need modification
-
-7. **Event Conflict Detection**: Overlapping events warning
-   - Visual indicator on calendar
-   - Alert when creating overlapping events
 
 8. **Search Functionality**: Notes page could have search
    - Filter notes by title/content
@@ -117,15 +124,23 @@
 
 ## Database Schema
 
-**user_settings table columns:**
-- uuid (PK, FK)
-- theme
-- notifications_enabled
-- calendar_default_view
-- time_format
-- date_format
-- created_at
-- updated_at
+**user_settings table columns (UPDATED Feb 2026):**
+- uuid (PK, FK to users.uuid)
+- theme (VARCHAR(20), DEFAULT 'light')
+- notifications_enabled (TINYINT(1), DEFAULT 1)
+- email_notifications (TINYINT(1), DEFAULT 1)
+- timezone (VARCHAR(50), DEFAULT 'UTC')
+- time_format (VARCHAR(10), DEFAULT '12h')
+- date_format (VARCHAR(20), DEFAULT 'MM/DD/YYYY')
+- created_at (TIMESTAMP, DEFAULT CURRENT_TIMESTAMP)
+- updated_at (TIMESTAMP, ON UPDATE CURRENT_TIMESTAMP)
+
+**Recent Changes:**
+- ✅ Removed calendar_default_view column (not needed)
+- ✅ Added email_notifications toggle
+- ✅ Added timezone setting
+- ✅ Fixed databaseHandler.js to match actual table structure
+- ✅ Fixed frontend to only send supported fields to backend
 
 ## Libraries Used
 
@@ -142,6 +157,12 @@
 
 **Markdown:**
 - `react-markdown` - Renders markdown preview in Notes
+
+**User Feedback:**
+- `react-hot-toast` - Toast notifications for user actions
+
+**Icons & UI:**
+- `react-icons` - Feather icons (FiX) for consistent UI across all components
 
 ## Summary
 
@@ -161,6 +182,19 @@ The React implementation successfully replicates **95%** of the vanilla JavaScri
 - ✅ DeleteAccountModal component (two-step account deletion)
 - ✅ ICS Export (download calendar as .ics)
 - ✅ ICS Import (upload .ics with security validation)
+- ✅ **BUG FIXES (Feb 2026):**
+  - Fixed ESLint errors ('theme' unused variable, 'arguments' not defined)
+  - Fixed database handler settings save issues
+  - Updated table structure to match actual database
+  - Fixed frontend settings filtering for backend compatibility
+- ✅ **Event Notifications System:**
+  - Toast notifications via react-hot-toast
+  - Success/Error feedback for all user actions
+  - Settings save confirmations
+- ✅ **React Icons Implementation:**
+  - Feather icons across all components (Navbar, Dashboard, Calendar, Notes)
+  - Replaced emoji/text symbols with professional SVG icons
+  - Consistent icon design language throughout the app
 
 **Remaining priority items:**
 1. Dark mode for remaining pages (Dashboard, Notes, modals)

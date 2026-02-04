@@ -419,7 +419,8 @@ const getUserSettings = async (uuid) =>
         return {
             theme: 'light',
             notifications_enabled: true,
-            calendar_default_view: 'week',
+            email_notifications: true,
+            timezone: 'UTC',
             time_format: '12h',
             date_format: 'MM/DD/YYYY'
         };
@@ -448,15 +449,16 @@ const updateUserSettings = async (uuid, settings) =>
         if (existing.length === 0) {
             // Create new settings row
             await pool.execute(
-                `INSERT INTO user_settings (uuid, theme, notifications_enabled, calendar_default_view, time_format, date_format) 
-                 VALUES (?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO user_settings (uuid, theme, notifications_enabled, email_notifications, timezone, date_format, time_format) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
                 [
                     uuid,
                     settings.theme || 'light',
                     settings.notifications_enabled !== undefined ? settings.notifications_enabled : true,
-                    settings.calendar_default_view || 'week',
-                    settings.time_format || '12h',
-                    settings.date_format || 'MM/DD/YYYY'
+                    settings.email_notifications !== undefined ? settings.email_notifications : true,
+                    settings.timezone || 'UTC',
+                    settings.date_format || 'MM/DD/YYYY',
+                    settings.time_format || '12h'
                 ]
             );
         } else {
@@ -472,9 +474,13 @@ const updateUserSettings = async (uuid, settings) =>
                 updates.push('notifications_enabled = ?');
                 values.push(settings.notifications_enabled);
             }
-            if (settings.calendar_default_view) {
-                updates.push('calendar_default_view = ?');
-                values.push(settings.calendar_default_view);
+            if (settings.email_notifications !== undefined) {
+                updates.push('email_notifications = ?');
+                values.push(settings.email_notifications);
+            }
+            if (settings.timezone) {
+                updates.push('timezone = ?');
+                values.push(settings.timezone);
             }
             if (settings.time_format) {
                 updates.push('time_format = ?');

@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
+import { FiHome, FiCalendar, FiEdit3, FiSettings, FiLogOut } from 'react-icons/fi';
 import { useAuth } from '../hooks/useAuth';
 import './Navbar.css';
 
@@ -19,19 +20,19 @@ const Navbar = () => {
     return (
         <nav className="app-navbar">
             <NavLink to="/dashboard" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                Dashboard
+                <FiHome /> Dashboard
             </NavLink>
             <NavLink to="/calendar" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                Calendar
+                <FiCalendar /> Calendar
             </NavLink>
             <NavLink to="/notes" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                Notes
+                <FiEdit3 /> Notes
             </NavLink>
             <NavLink to="/settings" className={({ isActive }) => isActive ? 'nav-link active' : 'nav-link'}>
-                Settings
+                <FiSettings /> Settings
             </NavLink>
             <button onClick={handleLogout} className="nav-link logout-btn">
-                Logout
+                <FiLogOut /> Logout
             </button>
         </nav>
     );

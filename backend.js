@@ -43,7 +43,7 @@ const fs = require('fs'); // for reading user_instructions
 const path = require('path'); // for path joining
 const multer = require('multer'); // for file uploads
 const ical = require('node-ical'); // for parsing ICS files
-const icalGenerator = require('ical-generator'); // for generating ICS files
+const { default: icalGenerator } = require('ical-generator'); // for generating ICS files
 
 const databaseHandler = require('./databaseHandler'); // Database backend Handler module 
 const { fetchTimetable } = require('./gettimetable'); // Timetable scraper module
@@ -916,16 +916,20 @@ app.patch('/user/settings', async (req, res) =>
     }
 
     try {
+        console.log('Updating settings for user:', req.session.userId);
+        console.log('Settings data:', req.body);
+        
         const success = await databaseHandler.updateUserSettings(req.session.userId, req.body);
         
         if (success) {
             return res.json({ success: true, message: 'Settings updated successfully' });
         } else {
+            console.error('updateUserSettings returned false');
             return res.status(500).json({ success: false, error: 'Failed to update settings' });
         }
     } catch (error) {
         console.error('Error updating settings:', error);
-        return res.status(500).json({ success: false, error: 'Server error' });
+        return res.status(500).json({ success: false, error: error.message || 'Server error' });
     }
 });
 

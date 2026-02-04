@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { notesAPI, eventsAPI } from '../apiHandler';
+import toast from 'react-hot-toast';import { FiEdit3, FiCalendar, FiTrash2 } from 'react-icons/fi';import { notesAPI, eventsAPI } from '../apiHandler';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
 import DashboardModal from '../components/DashboardModal';
@@ -105,11 +104,11 @@ const Dashboard = () => {
                         {/* Quick Action Buttons */}
                         <div className="quick-actions">
                             <button onClick={() => openModal('note')} className="action-card">
-                                <span className="action-icon">📝</span>
+                                <span className="action-icon"><FiEdit3 /></span>
                                 <span className="action-label">Create Note</span>
                             </button>
                             <button onClick={() => openModal('event')} className="action-card">
-                                <span className="action-icon">📅</span>
+                                <span className="action-icon"><FiCalendar /></span>
                                 <span className="action-label">Create Event</span>
                             </button>
                         </div>
@@ -148,7 +147,7 @@ const Dashboard = () => {
                                         className="delete-event-btn"
                                         title="Delete Event"
                                     >
-                                        ×
+                                        <FiTrash2 />
                                     </button>
                                 </div>
                             ))

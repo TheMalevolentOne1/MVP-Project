@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import { FiChevronLeft, FiChevronRight, FiBookOpen, FiDownload, FiUpload } from 'react-icons/fi';
 import { eventsAPI } from '../apiHandler';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
@@ -240,18 +241,48 @@ const CalendarPage = () => {
         });
     };
 
-    const calculateEventStyle = (event) => {
+    const calculateEventStyle = (event, slotDate = null) => {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end_time);
+        const currentSlotDate = slotDate ? new Date(slotDate) : new Date(eventStart); // Get current day being rendered
+        
+        // Check if event spans multiple days
+        const startsOnCurrentDay = eventStart.toDateString() === currentSlotDate.toDateString();
+        const endsOnCurrentDay = eventEnd.toDateString() === currentSlotDate.toDateString();
         
         // Calculate top offset based on minutes past the hour
-        const startMinutes = eventStart.getMinutes();
-        const topOffset = (startMinutes / 60) * 100;
+        let topOffset = 0;
+        if (startsOnCurrentDay) {
+            const startMinutes = eventStart.getMinutes();
+            topOffset = (startMinutes / 60) * 100;
+        }
         
         // Calculate height based on duration in hours
-        const durationMs = eventEnd - eventStart;
-        const durationHours = durationMs / (1000 * 60 * 60);
-        const height = durationHours * 60; // 60px per hour (matches min-height of grid-slot)
+        let durationHours = 0;
+        if (startsOnCurrentDay && endsOnCurrentDay) {
+            // Event fully contained in this day
+            const durationMs = eventEnd - eventStart;
+            durationHours = durationMs / (1000 * 60 * 60);
+        } else if (startsOnCurrentDay) {
+            // Event starts today, ends tomorrow or later
+            const dayEnd = new Date(eventStart);
+            dayEnd.setHours(23, 59, 59, 999);
+            const durationMs = dayEnd - eventStart;
+            durationHours = durationMs / (1000 * 60 * 60);
+        } else if (endsOnCurrentDay) {
+            // Event started before today, ends today
+            const dayStart = new Date(slotDate);
+            dayStart.setHours(0, 0, 0, 0);
+            const durationMs = eventEnd - dayStart;
+            durationHours = durationMs / (1000 * 60 * 60);
+            topOffset = 0; // Start from top since it started before
+        } else {
+            // Event spans entire day
+            durationHours = 24;
+            topOffset = 0;
+        }
+        
+        const height = durationHours * 60; // 60px per hour
         
         return {
             top: `${topOffset}%`,
@@ -297,7 +328,7 @@ const CalendarPage = () => {
                                     onClick={() => handleSlotClick(date, hour)}
                                 >
                                     {slotEvents.map(event => {
-                                        const eventStyle = calculateEventStyle(event);
+                                        const eventStyle = calculateEventStyle(event, date);
                                         return (
                                             <div 
                                                 key={event.id} 
@@ -358,21 +389,21 @@ const CalendarPage = () => {
             <main className="calendar-main">
                 <div className="calendar-controls">
                     <button className="nav-btn" onClick={() => changeWeek(-7)}>
-                        ← Prev
+                        <FiChevronLeft /> Prev
                     </button>
                     <span className="week-label">{formatWeekLabel()}</span>
                     <button className="nav-btn" onClick={() => changeWeek(7)}>
-                        Next →
+                        Next <FiChevronRight />
                     </button>
                     <button className="timetable-btn" onClick={handleExtractTimetable}>
-                        📚 Import Timetable
+                        <FiBookOpen /> Import Timetable
                     </button>
                     <div className="ics-controls">
                         <button className="ics-btn export" onClick={handleExportICS} title="Export to ICS">
-                            📤 Export
+                            <FiDownload /> Export
                         </button>
                         <label className="ics-btn import" title="Import from ICS">
-                            📥 Import
+                            <FiUpload /> Import
                             <input
                                 type="file"
                                 accept=".ics"

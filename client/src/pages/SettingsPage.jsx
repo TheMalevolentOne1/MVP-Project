@@ -12,7 +12,7 @@ import './SettingsPage.css';
 const SettingsPage = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    const { theme, changeTheme, getThemePreference } = useTheme();
+    const { changeTheme, getThemePreference } = useTheme();
     const [settings, setSettings] = useState(() => ({
         theme: localStorage.getItem('theme') || 'light',
         time_format: '12h',
@@ -60,8 +60,16 @@ const SettingsPage = () => {
             // Update theme context first
             changeTheme(settings.theme);
             
+            // Filter out unsupported fields before sending to backend
+            const filteredSettings = {
+                theme: settings.theme,
+                notifications_enabled: settings.notifications_enabled,
+                time_format: settings.time_format,
+                date_format: settings.date_format
+            };
+            
             // Save to backend
-            const { data } = await settingsAPI.update(settings);
+            const { data } = await settingsAPI.update(filteredSettings);
             if (data.success) {
                 toast.success('Settings saved!');
             } else {

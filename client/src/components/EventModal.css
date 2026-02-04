@@ -12,17 +12,19 @@
 }
 
 .modal-content {
-    background: white;
+    background: var(--bg-secondary, #ffffff);
     padding: 2rem;
     border-radius: 8px;
     max-width: 500px;
     width: 90%;
     max-height: 90vh;
     overflow-y: auto;
+    color: var(--text-primary, #2c3e50);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
 }
 
 .modal-content h2 {
-    color: #2c3e50;
+    color: var(--text-primary, #2c3e50);
     margin-top: 0;
     margin-bottom: 1.5rem;
 }
