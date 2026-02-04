@@ -421,8 +421,7 @@ const getUserSettings = async (uuid) =>
             notifications_enabled: true,
             calendar_default_view: 'week',
             time_format: '12h',
-            date_format: 'MM/DD/YYYY',
-            language: 'en'
+            date_format: 'MM/DD/YYYY'
         };
     } catch (err) {
         console.error('Error fetching user settings:', err);
@@ -449,16 +448,15 @@ const updateUserSettings = async (uuid, settings) =>
         if (existing.length === 0) {
             // Create new settings row
             await pool.execute(
-                `INSERT INTO user_settings (uuid, theme, notifications_enabled, calendar_default_view, time_format, date_format, language) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO user_settings (uuid, theme, notifications_enabled, calendar_default_view, time_format, date_format) 
+                 VALUES (?, ?, ?, ?, ?, ?)`,
                 [
                     uuid,
                     settings.theme || 'light',
                     settings.notifications_enabled !== undefined ? settings.notifications_enabled : true,
                     settings.calendar_default_view || 'week',
                     settings.time_format || '12h',
-                    settings.date_format || 'MM/DD/YYYY',
-                    settings.language || 'en'
+                    settings.date_format || 'MM/DD/YYYY'
                 ]
             );
         } else {
@@ -485,10 +483,6 @@ const updateUserSettings = async (uuid, settings) =>
             if (settings.date_format) {
                 updates.push('date_format = ?');
                 values.push(settings.date_format);
-            }
-            if (settings.language) {
-                updates.push('language = ?');
-                values.push(settings.language);
             }
             
             if (updates.length > 0) {

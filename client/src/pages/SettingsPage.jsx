@@ -14,8 +14,7 @@ const SettingsPage = () => {
     const [settings, setSettings] = useState(() => ({
         theme: localStorage.getItem('theme') || 'light',
         time_format: '12h',
-        date_format: 'MM/DD/YYYY',
-        language: 'en'
+        date_format: 'MM/DD/YYYY'
     }));
     const [loading, setLoading] = useState(true);
     const [saveMessage, setSaveMessage] = useState('');
@@ -179,24 +178,6 @@ const SettingsPage = () => {
                                 <option value="MM/DD/YYYY">MM/DD/YYYY (US)</option>
                                 <option value="DD/MM/YYYY">DD/MM/YYYY (UK)</option>
                                 <option value="YYYY-MM-DD">YYYY-MM-DD (ISO)</option>
-                            </select>
-                        </div>
-                    </section>
-
-                    {/* Language */}
-                    <section className="settings-section">
-                        <h2>Language</h2>
-                        <div className="setting-item">
-                            <label htmlFor="language">Language</label>
-                            <select
-                                id="language"
-                                value={settings.language}
-                                onChange={(e) => handleChange('language', e.target.value)}
-                            >
-                                <option value="en">English</option>
-                                <option value="es">Español</option>
-                                <option value="fr">Français</option>
-                                <option value="de">Deutsch</option>
                             </select>
                         </div>
                     </section>
