@@ -1,28 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { FiChevronLeft, FiChevronRight, FiBookOpen, FiDownload, FiUpload } from 'react-icons/fi';
-import { eventsAPI } from '../apiHandler';
-import AppHeader from '../components/AppHeader';
-import Navbar from '../components/Navbar';
-import EventModal from '../components/EventModal';
-import TimetableModal from '../components/TimetableModal';
-import ConfirmModal from '../components/ConfirmModal';
-import './CalendarPage.css';
+import React, { useState, useEffect } from 'react'; // useState for component state management and useEffect for functions that run after render
+import { useLocation } from 'react-router-dom'; // useLocation to access the current URL and query parameters
+import toast from 'react-hot-toast'; // toast for showing notifications to the user
+import { FiChevronLeft, FiChevronRight, FiBookOpen, FiDownload, FiUpload } from 'react-icons/fi'; // Importing icons for navigation and actions
+
+import { eventsAPI } from '../apiHandler'; // API handler for making requests to the backend related to events
+
+import AppHeader from '../components/AppHeader'; // AppHeader component for displaying the page title
+import Navbar from '../components/Navbar'; // Navbar component for site navigation
+import EventModal from '../components/EventModal'; // EventModal component for creating and editing events
+import TimetableModal from '../components/TimetableModal'; // TimetableModal component for logging into the timetable uclan timetable
+import ConfirmModal from '../components/ConfirmModal'; // ConfirmModal component for confirming actions like event deletion
+
+import './CalendarPage.css'; // CSS file for styling the CalendarPage component
 
 const DAYS_IN_WEEK = 7;
 const HOURS_IN_DAY = 24;
 
-// Helper function
-const getMonday = (date) => {
+/*
+Brief: Get the Monday of the week for a given date.
+
+@Param1: date - A Date object representing any date within the week.
+
+@Return: Date Object
+@ReturnT: Monday of the week.
+*/
+const getMonday = ({date}) => 
+{
     const d = new Date(date);
     const day = d.getDay();
-    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+    const diff = d.getDate() - day + (day === 0 ? -6 : 1); // Adjust for Sunday (0) to go back 6 days, otherwise go back to Monday
     return new Date(d.setDate(diff));
 };
 
-const CalendarPage = () => {
+/*
+Brief: CalendarPage component that displays a weekly calendar view, 
+allows users to create, edit, delete events, and import/export calendar data.
+
+@Return: JSX Element
+@ReturnT: The rendered calendar page with all functionalities.
+*/
+const CalendarPage = () => 
+{
     const location = useLocation();
+
     const [events, setEvents] = useState([]);
     const [currentWeekStart, setCurrentWeekStart] = useState(getMonday(new Date()));
     const [showModal, setShowModal] = useState(false);
@@ -30,21 +50,30 @@ const CalendarPage = () => {
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [editingEvent, setEditingEvent] = useState(null);
 
-    useEffect(() => {
+    // Fetch events on initial load and when the URL query parameters change (to handle dashboard "create" parameter)
+    useEffect(() => 
+    {
         fetchEvents();
         
         // Check for create parameter from dashboard
         const params = new URLSearchParams(location.search);
-        if (params.get('create') === 'true') {
+        if (params.get('create') === 'true') 
+        {
             setShowModal(true);
         }
     }, [location.search]);
 
-    useEffect(() => {
+    // Fetch events whenever the current week changes to ensure the calendar displays up-to-date information for the selected week.
+    useEffect(() => 
+    {
         fetchEvents();
     }, [currentWeekStart]);
 
-    const fetchEvents = async () => {
+    /*
+    Brief: Fetch all calendar events from the backend API and update the component state.
+    */
+    const fetchEvents = async () => 
+    {
         try {
             const { data } = await eventsAPI.getAll();
             if (data.success) {
@@ -55,12 +84,23 @@ const CalendarPage = () => {
         }
     };
 
+    /*
+    Brief: Handle click on a calendar slot to create a new event.
+
+    @Param1: date - The date of the clicked slot.
+    @Param2: hour - The hour of the clicked slot.
+    */
     const handleSlotClick = (date, hour) => {
         setSelectedSlot({ date, hour });
         setEditingEvent(null);
         setShowModal(true);
     };
 
+    /*
+    Brief: Handle click on an existing event to edit it.
+
+    @Param1: event - The event object that was clicked.
+    */
     const handleEditEvent = (event) => {
         setEditingEvent(event);
         setSelectedSlot(null);
@@ -69,10 +109,18 @@ const CalendarPage = () => {
 
     const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, eventId: null });
 
+    /*
+    Brief: Handle click on the delete button of an event to open the confirmation modal.
+
+    @Param1: eventId - The ID of the event to be deleted.
+    */
     const handleDeleteEvent = (eventId) => {
         setDeleteConfirm({ isOpen: true, eventId });
     };
 
+    /*
+    Brief: Confirm deletion of an event by calling the delete API and refreshing the events list.
+    */
     const confirmDeleteEvent = async () => {
         try {
             const { data } = await eventsAPI.delete(deleteConfirm.eventId);
@@ -90,33 +138,62 @@ const CalendarPage = () => {
         }
     };
 
-    const handleSaveEvent = async (eventData, eventId) => {
-        try {
+    /*
+    Brief: Handle saving of an event (both creating new and updating existing) by calling the appropriate API endpoint and refreshing the events list.
+
+    @Param1: eventData - An object containing the event details (title, start time, end time, etc.).
+    @Param2: eventId - The ID of the event being edited (null if creating a new event).
+     */
+    const handleSaveEvent = async (eventData, eventId) => 
+    {
+        try 
+        {
             let response;
             
-            if (eventId) {
+            if (eventId) 
+            {
                 response = await eventsAPI.update(eventId, eventData);
-            } else {
+            } 
+            else 
+            {
                 response = await eventsAPI.create(eventData);
             }
 
-            if (response.data.success) {
+            if (response.data.success) 
+            {
                 toast.success(eventId ? 'Event updated' : 'Event created');
                 fetchEvents();
-            } else {
+            } 
+            else 
+            {
                 toast.error('Failed to save event: ' + response.data.error);
             }
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.error('Error saving event:', error);
             toast.error('Error saving event');
         }
     };
 
+    /*
+    Brief: Handle click on "Import Timetable" button to open the timetable login modal.
+    */
     const handleExtractTimetable = () => {
         setShowTimetableModal(true);
     };
 
-    const handleTimetableSubmit = async ({ email, password }) => {
+    /*
+    Brief: Handle submission of timetable login credentials, fetch events from the timetable, and update the calendar.
+    
+    @Param1: email - The user's email for the timetable login.
+    @Param2: password - The user's password for the timetable login.
+
+    @Return: Promise
+    @ReturnT: Resolves if timetable import is successful, otherwise throws an error.
+    @ReturnF: Rejects with an error if timetable import fails.
+    */
+    const handleTimetableSubmit = async (email, password) => {
         try {
             const { data } = await eventsAPI.syncTimetable(email, password);
             
@@ -124,7 +201,7 @@ const CalendarPage = () => {
                 toast.success(`Imported ${data.imported} events from timetable`);
                 fetchEvents(); // Refresh calendar
             } else {
-                throw new Error(data.error || 'Failed to import timetable');
+                return Promise.reject(new Error(data.error || 'Failed to import timetable'));
             }
         } catch (error) {
             console.error('Timetable sync error:', error);
@@ -132,7 +209,13 @@ const CalendarPage = () => {
         }
     };
 
-    // ICS Export handler
+    /*
+    Brief: Handle click on "Export" button to download the user's calendar events as an ICS file.
+    
+    @Return: Promise
+    @ReturnT: Resolves if export is successful and the download starts, otherwise throws an error.
+    @ReturnF: Rejects with an error if export fails.
+    */
     const handleExportICS = async () => {
         try {
             const response = await eventsAPI.exportICS();
@@ -154,7 +237,15 @@ const CalendarPage = () => {
         }
     };
 
-    // ICS Import handler
+    /*
+    Brief: Handle selection of an ICS file for import
+
+    @Param1: event - The file input change event containing the selected file.
+
+    @Return: Promise
+    @ReturnT: Resolves if import is successful and events are added to the calendar, otherwise throws an error.
+    @ReturnF: Rejects with an error if import fails or if the file is invalid.
+    */
     const handleImportICS = async (event) => {
         const file = event.target.files[0];
         if (!file) return;

@@ -2,16 +2,22 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './DashboardModal.css';
 
-const DashboardModal = ({ isOpen, onClose, type }) => {
+const DashboardModal = ({ isOpen, onClose, type }) => 
+{
     const navigate = useNavigate();
 
     if (!isOpen) return null;
 
-    const handleAction = () => {
+    const handleAction = () => 
+    {
         onClose();
-        if (type === 'note') {
+
+        if (type === 'note') 
+        {
             navigate('/notes');
-        } else if (type === 'event') {
+        } 
+        else if (type === 'event') 
+        {
             navigate('/calendar?create=true');
         }
     };

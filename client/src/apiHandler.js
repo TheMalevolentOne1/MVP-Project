@@ -10,7 +10,7 @@ const api = axios.create({
     }
 });
 
-// Auth API
+// Auth API - function labels for authentication-related endpoints
 export const authAPI = {
     whoami: () => api.get('/auth/whoami'),
     login: (email, password) => api.post('/auth/login', { email, password }),
@@ -19,7 +19,7 @@ export const authAPI = {
     deleteAccount: () => api.post('/user/del-acc')
 };
 
-// Notes API
+// Notes API - function labels for notes-related endpoints
 export const notesAPI = {
     getAll: () => api.get('/user/notes'),
     getByTitle: (title) => api.get(`/user/notes/${encodeURIComponent(title)}`),
@@ -29,7 +29,7 @@ export const notesAPI = {
     delete: (title) => api.delete(`/user/notes/${encodeURIComponent(title)}`)
 };
 
-// Calendar API
+// Calendar API - function labels for calendar-related endpoints
 export const eventsAPI = {
     getAll: () => api.get('/user/events'),
     getUpcoming: () => api.get('/user/events/upcoming'),
@@ -44,7 +44,7 @@ export const eventsAPI = {
     exportICS: () => api.get('/user/events/export-ics', { responseType: 'blob' })
 };
 
-// Settings API
+// Settings API - function labels for settings-related endpoints
 export const settingsAPI = {
     get: () => api.get('/user/settings'),
     update: (settings) => api.patch('/user/settings', settings)

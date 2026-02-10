@@ -14,22 +14,33 @@ import CalendarPage from './pages/CalendarPage';
 import SettingsPage from './pages/SettingsPage';
 
 // Protected Route wrapper
-const ProtectedRoute = ({ children }) => {
+const MemberRoute = ({ children }) => 
+{
     const { user, loading } = useAuth();
-    
-    if (loading) return <div>Loading...</div>;
-    return user ? children : <Navigate to="/login" />;
+
+    if (loading)
+    {
+        return <div>Loading...</div>;
+    }
+
+    return user ? children : <Navigate to="/login" />; // Redirect to login if not authenticated
 };
 
 // Public Route (redirect if already logged in)
-const PublicRoute = ({ children }) => {
+const PublicRoute = ({ children }) => 
+{
     const { user, loading } = useAuth();
-    
-    if (loading) return <div>Loading...</div>;
-    return !user ? children : <Navigate to="/dashboard" />;
+
+    if (loading)
+    {
+        return <div>Loading...</div>;
+    }
+
+    return !user ? children : <Navigate to="/dashboard" />; // Redirect to dashboard if already authenticated
 };
 
-function App() {
+const App = () => 
+{
     return (
         <BrowserRouter>
             <Toaster 
@@ -61,11 +72,11 @@ function App() {
                         <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
                         <Route path="/register" element={<PublicRoute><RegisterPage /></PublicRoute>} />
                         
-                        {/* Protected Routes */}
-                        <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-                        <Route path="/notes" element={<ProtectedRoute><NotesPage /></ProtectedRoute>} />
-                        <Route path="/calendar" element={<ProtectedRoute><CalendarPage /></ProtectedRoute>} />
-                        <Route path="/settings" element={<ProtectedRoute><SettingsPage /></ProtectedRoute>} />
+                        {/* Member Routes */}
+                        <Route path="/dashboard" element={<MemberRoute><Dashboard /></MemberRoute>} />
+                        <Route path="/notes" element={<MemberRoute><NotesPage /></MemberRoute>} />
+                        <Route path="/calendar" element={<MemberRoute><CalendarPage /></MemberRoute>} />
+                        <Route path="/settings" element={<MemberRoute><SettingsPage /></MemberRoute>} />
                     </Routes>
                 </AuthProvider>
         </BrowserRouter>
