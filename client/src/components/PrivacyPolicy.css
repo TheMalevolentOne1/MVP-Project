@@ -1,0 +1,39 @@
+/* PrivacyPolicy.css */
+
+.privacy-policy {
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    line-height: 1.6;
+    color: #595959;
+}
+
+.title {
+    font-size: 26px;
+    color: #000000;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #595959;
+}
+
+.heading {
+    font-size: 19px;
+    color: #000000;
+    margin-top: 20px;
+}
+
+.body-text {
+    font-size: 14px;
+    color: #595959;
+    margin: 10px 0;
+}
+
+.link {
+    color: #3030F1;
+    text-decoration: none;
+}
+
+.link:hover {
+    text-decoration: underline;
+}

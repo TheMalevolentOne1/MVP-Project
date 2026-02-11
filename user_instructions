@@ -1,32 +1,249 @@
-# How to Use!
+# Welcome to Adaptive Study Cipher! 📚
 
-Welcome to your first note in your Adaptive Study Cipher planner journey!
+Congratulations on starting your productivity journey! This guide will help you master note-taking with Markdown formatting.
 
-## Writing Headings
-Use one or more `#` symbols at the start of a line to create headings:
-```
-# Main Heading
-## Subheading
-### Smaller Heading
-```
+---
 
-## Emphasis
-*Italics text* is produced by wrapping text in single asterisks or underscores:
-```
-*Italics text* or _Italics text_
-```
+## 🎯 Quick Start
 
-**Bold text** is produced by wrapping text in double asterisks or underscores:
-```
-**Bold text** or __Bold text__
-```
+Your notes support **Markdown** — a simple way to format text that's easy to learn and powerful to use. Everything you write is automatically saved and synced.
 
-## Lists
-Create bullet lists using dashes, pluses, or asterisks:
-```
-- Item 1
-- Item 2
+---
+
+## 📝 Headings
+
+Create a hierarchy in your notes using `#` symbols:
+
+```markdown
+# Chapter Title (H1)
+## Section (H2)
+### Subsection (H3)
+#### Topic (H4)
+##### Subtopic (H5)
+###### Detail (H6)
 ```
 
-## Code
-Inline code: `code here`
+**Tip:** Use headings to organize lecture notes, study guides, or project outlines!
+
+---
+
+## ✨ Text Emphasis
+
+Make your text stand out:
+
+| Style | Syntax | Result |
+|-------|--------|--------|
+| Bold | `**bold**` or `__bold__` | **bold** |
+| Italic | `*italic*` or `_italic_` | *italic* |
+| Bold + Italic | `***both***` | ***both*** |
+| Strikethrough | `~~crossed out~~` | ~~crossed out~~ |
+
+**Example:**
+```markdown
+This is **important** and this is *emphasized*.
+You can also use ***both together*** for maximum impact!
+```
+
+---
+
+## 📋 Lists
+
+### Unordered Lists (Bullet Points)
+```markdown
+- First item
+- Second item
+  - Nested item
+  - Another nested item
+- Third item
+```
+
+### Ordered Lists (Numbered)
+```markdown
+1. First step
+2. Second step
+   1. Sub-step A
+   2. Sub-step B
+3. Third step
+```
+
+### Task Lists (Checklists)
+Perfect for tracking study tasks!
+```markdown
+- [x] Complete Chapter 1 reading
+- [x] Review lecture notes
+- [ ] Practice problems 1-10
+- [ ] Prepare for quiz
+```
+
+---
+
+## 🔗 Links
+
+```markdown
+[Visible Text](https://example.com)
+[Google](https://google.com)
+```
+
+---
+
+## 💻 Code
+
+### Inline Code
+Use backticks for inline code:
+```markdown
+The `console.log()` function prints output.
+```
+
+### Code Blocks
+Use triple backticks with optional language for syntax highlighting:
+
+````markdown
+```python
+def hello_world():
+    print("Hello, Study Cipher!")
+```
+
+```javascript
+const greet = () => console.log("Hello!");
+```
+
+```java
+public static void main(String[] args) {
+    System.out.println("Hello!");
+}
+```
+````
+
+---
+
+## 📊 Tables
+
+Organize data neatly:
+
+```markdown
+| Subject | Status | Priority |
+|---------|--------|----------|
+| Math | In Progress | High |
+| Physics | Complete | Medium |
+| Chemistry | Not Started | Low |
+```
+
+**Alignment options:**
+```markdown
+| Left | Center | Right |
+|:-----|:------:|------:|
+| L    | C      | R     |
+```
+
+---
+
+## 💬 Blockquotes
+
+Great for highlighting key concepts or quotes:
+
+```markdown
+> "The only way to do great work is to love what you do."
+> — Steve Jobs
+
+> **Key Concept:** This is an important definition 
+> that spans multiple lines.
+```
+
+---
+
+## ➖ Horizontal Rules
+
+Separate sections with a horizontal line:
+
+```markdown
+---
+```
+or
+```markdown
+***
+```
+
+---
+
+## 🖼️ Images
+
+```markdown
+![Alt text](image-url.jpg)
+![Study Diagram](https://example.com/diagram.png)
+```
+
+---
+
+## 🎓 Study Note Templates
+
+### Lecture Notes Template
+```markdown
+# [Course Name] - Lecture [#]
+**Date:** [Date]
+**Topic:** [Topic]
+
+## Key Concepts
+- Concept 1
+- Concept 2
+
+## Notes
+[Your notes here]
+
+## Questions to Review
+- [ ] Question 1
+- [ ] Question 2
+
+## Summary
+> [Brief summary of lecture]
+```
+
+### Flashcard Style
+```markdown
+## Term: [Word/Concept]
+**Definition:** [Explanation]
+
+**Example:** [Usage example]
+
+**Related:** [Connected concepts]
+```
+
+### Cornell Notes Style
+```markdown
+# Topic: [Subject]
+
+| Cues/Questions | Notes |
+|----------------|-------|
+| What is X? | X is defined as... |
+| Why is Y important? | Y matters because... |
+
+## Summary
+[2-3 sentence summary]
+```
+
+---
+
+## ⌨️ Keyboard Shortcuts
+
+| Action | Shortcut |
+|--------|----------|
+| Bold | `Ctrl + B` |
+| Italic | `Ctrl + I` |
+| Save | Auto-saved! |
+
+---
+
+## 💡 Pro Tips
+
+1. **Use headings liberally** — They make notes scannable
+2. **Create checklists** — Track your study progress
+3. **Code blocks for formulas** — Keep technical content clean
+4. **Tables for comparisons** — Compare concepts side-by-side
+5. **Blockquotes for definitions** — Highlight key terms
+
+---
+
+## 🚀 You're Ready!
+
+Start taking notes, organize your calendar, and ace your studies with **Adaptive Study Cipher**!
+
+*Happy studying!* 🎉
