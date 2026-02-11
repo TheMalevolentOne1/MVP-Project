@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Adaptive Study Cipher - Calendar</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://www.w3schools.com/lib/w3.js"></script>
+    </head>
+
+    <body class="app-page">
+        <header class="app-header">
+            <div class="logo-area">
+                <button class="logo-btn" onclick="window.location = 'index.html'">ASC</button>
+            </div>
+
+            <!-- Include shared navbar -->
+            <div w3-include-html="shared/navbar.html"></div>
+            <button onclick="extractTimeTable()">ULAN TimeTable</button>
+
+            <div class="user-profile">
+                <span id="username">Loading...</span>
+                <div class="profile-icon"></div>
+            </div>
+        </header>
+
+<!-- Main Content -->
+<main class="calendar-main">
+    <div id="eventModal" class="modal hidden">
+        <div class="modal-content">
+          <h2 style="color:black;">Create Event</h2>
+      
+          <form id="eventForm">
+            <label>
+              Title
+              <input type="text" id="eventTitle" placeholder="Enter Event Title" required />
+            </label>
+      
+            <label>
+              Start
+              <input type="datetime-local" id="eventStart" required />
+            </label>
+      
+            <label>
+              End
+              <input type="datetime-local" id="eventEnd" placeholder="Optional" />
+            </label>
+      
+            <label>
+              Location
+              <input type="text" id="eventLocation" placeholder="Enter Location (Optional)" />
+            </label>
+      
+            <label>
+              Description
+              <textarea id="eventDescription" placeholder="Enter Description (Optional)"></textarea>
+            </label>
+      
+            <div class="modal-actions">
+              <button type="submit" id="createEventBtn">Create</button>
+              <button id="cancelEventBtn">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+    <!-- Controls -->
+    <div class="calendar-controls">
+        <button class="nav-btn" id="prevWeekBtn">← Prev</button>
+        <span class="week-label" id="currentWeekLabel">Dec 29 - Jan 4</span>
+        <button class="nav-btn" id="nextWeekBtn">Next →</button>
+    </div>
+
+    <!-- The Grid -->
+    <div id="calendarGrid" class="calendar-scroll-area">
+        <!-- Javascript will fill this -->
+    </div>
+  </main>
+
+    <script src="./calendar/calendar.js"></script>
+    <script src="./shared/navbar.js"></script>
+
+    <script>
+        w3.includeHTML();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Adaptive Study Cipher - Notes</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="styles.css" />
+        <script src="https://cdn.jsdelivr.net/npm/commonmark@0.31.0/dist/commonmark.min.js"></script>
+        <script src="https://www.w3schools.com/lib/w3.js"></script>
+    </head>
+    <body class="notes-page">
+        <header class="app-header">
+            <div class="logo-area">
+                <button class="logo-btn" onclick="window.location = 'index.html'">ASC</button>
+            </div>
+            
+            <h1 class="page-title">Calendar, <span id="username">Loading...</span></h1>
+            
+            <!-- Include shared navbar -->
+            <div w3-include-html="shared/navbar.html"></div>
+
+            <div class="user-profile">
+                <div class="profile-icon"></div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="notes-wrapper">
+            <!-- Sidebar - Notes List -->
+            <div class="sidebar-container">
+                <div class="sidebar-date-corner" id="sidebarDate" style="text-align:right; font-size:0.9em; color:#888; margin-bottom:4px;"></div>
+                <div class="sidebar-header">Notes List</div>
+                <aside class="notes-sidebar">
+                    <div class="search-row">
+                        <button class="action-btn add-btn">+</button>
+                        <button class="action-btn delete-btn">-</button>
+                        <button class="action-btn clear-btn">C</button>
+                        <button class="action-btn save-btn">S</button>
+                        <button class="action-btn download-btn">D</button>
+                    </div>
+                    
+                    <div class="notes-list" id="notesList">
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Main Editor Area -->
+            <main class="notes-main">
+                <!-- Mode Toggle -->
+                <div class="mode-toggle">
+                    <button class="mode-btn active" id="previewBtn">Preview</button>
+                    <button class="mode-btn" id="editBtn">Edit</button>
+                </div>
+
+                <!-- Notes Title -->
+                <input type="text" class="note-title-input" id="noteTitle" placeholder="Notes Title" maxlength="30" />
+
+                <!-- Notes Content -->
+                <div class="notes-content">
+                    <textarea class="notes-textarea" id="noteContent" placeholder="Notes Content"></textarea>
+                    <div class="notes-preview" id="notePreview" style="display: none;"></div>
+                </div>
+            </main>
+        </div>
+        
+        <script src="./notes/notes.js"></script>
+        <script src="./shared/navbar.js"></script>
+        <script>
+            w3.includeHTML();
+        </script>
+    </body>
+</html>
