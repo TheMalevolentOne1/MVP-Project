@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Adaptive Study Cipher - Landing Page</title>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <link rel="stylesheet" href="styles.css" />
+
+        <script type="text/javascript">
+            // Redirect to dashboard if already logged in
+            window.addEventListener('DOMContentLoaded', async () => 
+            {
+                try 
+                {
+                    const res = await fetch('/auth/whoami');
+                    const data = await res.json();
+                    if (data.loggedIn) {
+                        window.location.href = './dashboard.html';
+                    }
+                } 
+                catch (e) 
+                {
+                    console.log("Server Error. Unable to verify login status.");
+                }
+            });
+        </script>
+    </head>
+    
+    <body class="landing-page">
+        <header class="notes-header">
+            <button class="logo-btn" onclick="window.location = 'index.html'">Logo</button>
+            <h1 class="notes-title">Adaptive Study Cipher</h1>
+            <button class="logo-btn" onclick="window.location.href='./login_page.html'">Login!</button>
+        </header>
+        <main class="landing-main">
+            <h2 class="landing-subtitle">Your Student Study Planner</h2>
+            <img src="https://loremipsum.imgix.net/GTlzd4xkx4LmWsG1Kw1BB/ad1834111245e6ee1da4372f1eb5876c/placeholder.com-1280x720.png?w=1920&q=60&auto=format,compress" alt="ASC Landing Image" class="landing-img" />
+            <button class="landing-btn" onclick="window.location.href='./registration_page.html'">Get Started with ASC Today!</button>
+            <div class="footer">
+                <a href="./privacy_policy.html">Privacy Policy</a>
+                <a href="#">Other Legislation PLACEHOLDER</a>
+            </div>
+        </main>
+    </body>
+</html>
