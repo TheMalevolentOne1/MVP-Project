@@ -286,6 +286,11 @@ const CalendarPage = () =>
         }
     };
 
+    /*
+    Brief: Change the current week being displayed by adding a specified number of days to the current week start date.
+
+    @Param1: days - The number of days to add (positive to go forward, negative to go backward).
+    */
     const changeWeek = (days) => {
         const newWeekStart = new Date(currentWeekStart);
         newWeekStart.setDate(newWeekStart.getDate() + days);
@@ -332,7 +337,8 @@ const CalendarPage = () =>
         });
     };
 
-    const calculateEventStyle = (event, slotDate = null) => {
+    const calculateEventStyle = (event, slotDate = null) => 
+    {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end_time);
         const currentSlotDate = slotDate ? new Date(slotDate) : new Date(eventStart); // Get current day being rendered
@@ -343,7 +349,8 @@ const CalendarPage = () =>
         
         // Calculate top offset based on minutes past the hour
         let topOffset = 0;
-        if (startsOnCurrentDay) {
+        if (startsOnCurrentDay) 
+        {
             const startMinutes = eventStart.getMinutes();
             topOffset = (startMinutes / 60) * 100;
         }
@@ -351,23 +358,35 @@ const CalendarPage = () =>
         // Calculate height based on duration in hours
         let durationHours = 0;
         if (startsOnCurrentDay && endsOnCurrentDay) {
+
             // Event fully contained in this day
             const durationMs = eventEnd - eventStart;
-            durationHours = durationMs / (1000 * 60 * 60);
-        } else if (startsOnCurrentDay) {
+            durationHours = durationMs / (1000 * 60 * 60); // Convert milliseconds to hours
+
+        } 
+        else if (startsOnCurrentDay) 
+        {
+
             // Event starts today, ends tomorrow or later
             const dayEnd = new Date(eventStart);
             dayEnd.setHours(23, 59, 59, 999);
             const durationMs = dayEnd - eventStart;
             durationHours = durationMs / (1000 * 60 * 60);
-        } else if (endsOnCurrentDay) {
+
+        } 
+        else if (endsOnCurrentDay) 
+        {
+
             // Event started before today, ends today
             const dayStart = new Date(slotDate);
             dayStart.setHours(0, 0, 0, 0);
             const durationMs = eventEnd - dayStart;
             durationHours = durationMs / (1000 * 60 * 60);
             topOffset = 0; // Start from top since it started before
-        } else {
+
+        } 
+        else 
+        {
             // Event spans entire day
             durationHours = 24;
             topOffset = 0;
