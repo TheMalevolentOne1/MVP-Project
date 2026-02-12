@@ -5,10 +5,10 @@ Congratulations on starting your productivity journey! This guide will help you 
 ---
 
 # Powered By
-
-[React Markdown](https://github.com/remarkjs/react-markdown)
-[React Syntax HighLighter](https://github.com/react-syntax-highlighter/react-syntax-highlighter)
-[]
+- [React Markdown](https://github.com/remarkjs/react-markdown)
+- [React Syntax HighLighter](https://github.com/react-syntax-highlighter/react-syntax-highlighter)
+- [React GFM (GitHub Flavoured Markdown)](https://github.com/remarkjs/remark-gfm)
+- <sub>Plugin for React Markdown</sub> (HTML tags do **not** not render)
 
 ---
 

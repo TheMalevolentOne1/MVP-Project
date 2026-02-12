@@ -146,18 +146,18 @@ const editNoteContent = async (uuid, oldTitle, newTitle, content) =>
 /*
 Brief: Delete a note for a user
 @Param1 uuid - User's UUID
-@Param2 title - Note title
+@Param2 id - Note ID
 
 @Return: JSON
 @ReturnT: Success
 @ReturnF: Failure
 */
-const deleteNote = async (uuid, title) => 
+const deleteNote = async (uuid, id) => 
 {
     try {
         await pool.execute(
-            'DELETE FROM notes WHERE uuid = ? AND title = ?',
-            [uuid, title]
+            'DELETE FROM notes WHERE uuid = ? AND id = ?',
+            [uuid, id]
         );
         return { success: true };
     } catch (err) {

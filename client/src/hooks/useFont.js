@@ -15,9 +15,12 @@ export const useFont = (fontFamilies) =>
     const [isLoading, setIsLoading] = useState(true);
     const [loadedFonts, setLoadedFonts] = useState([]);
     
-    useEffect(() => {
-        WebFont.load({
-            google: { 
+    useEffect(() => 
+    {
+        WebFont.load(
+        {
+            google: 
+            { 
                 families: fontFamilies
             },
             active: () => setIsLoading(false),

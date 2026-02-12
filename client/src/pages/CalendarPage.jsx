@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom'; // useLocation to access the cur
 import toast from 'react-hot-toast'; // toast for showing notifications to the user
 import { FiChevronLeft, FiChevronRight, FiBookOpen, FiDownload, FiUpload } from 'react-icons/fi'; // Importing icons for navigation and actions
 
-import { eventsAPI } from '../apiHandler'; // API handler for making requests to the backend related to events
+import { eventsAPI, timetableAPI } from '../apiHandler'; // API handler for making requests to the backend related to events
 import { useTheme } from '../hooks/useTheme'; // Custom hook for managing theme (light/dark mode)
 
 import AppHeader from '../components/AppHeader'; // AppHeader component for displaying the page title
@@ -129,6 +129,9 @@ const CalendarPage = () =>
         try 
         {
             const { data } = await eventsAPI.delete(deleteConfirm.eventId);
+
+            console.log(`${deleteConfirm.eventId} delete response:`, data); // Log the response for debugging
+            
             if (data.success) 
             {
                 toast.success('Event deleted');
@@ -206,28 +209,43 @@ const CalendarPage = () =>
     @ReturnT: Resolves if timetable import is successful, otherwise throws an error.
     @ReturnF: Rejects with an error if timetable import fails.
     */
-    const handleTimetableSubmit = async (email, password) => 
+    const handleTimetableSubmit = async (user_data) => 
     {
+        const { email, password } = user_data;
+
         try 
         {
-            const { data } = await eventsAPI.syncTimetable(email, password);
+            console.log('Sending timetable sync request:', { email, password: '***' }); // Log request (hide password)
             
+            const { data } = await timetableAPI.sync(email, password);
+
             if (data.success) 
             {
                 toast.success(`Imported ${data.imported} events from timetable`);
-                fetchEvents(); // Refresh calendar
+                
+                if (data.errors && data.errors.length > 0)
+                {
+                    toast(`${data.errors.length} events had warnings during import`, { icon: '⚠️' });
+                    console.warn('Timetable import warnings:', data.errors);
+                }
+
+                fetchEvents();
             } 
             else 
             {
-                return Promise.reject(new Error(data.error || 'Failed to import timetable'));
+                toast.error('Failed to import timetable: ' + data.error);
             }
         } 
         catch (error) 
         {
-            console.error('Timetable sync error:', error);
-            throw new Error(error.response?.data?.error || 'Failed to import timetable');
+            console.error('Error importing timetable:', error);
+            console.error('Error response:', error.response?.data); // ← Add this
+            console.error('Error status:', error.response?.status); // ← Add this
+            console.error('Request data:', { email, password: '***' }); // ← Add this
+            toast.error(error.response?.data?.error || 'Failed to import timetable');
         }
     }
+    
 
     /*
     Brief: Handle click on "Export" button to download the user's calendar events as an ICS file.
