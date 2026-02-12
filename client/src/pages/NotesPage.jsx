@@ -5,8 +5,9 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import toast from 'react-hot-toast';
-import { FiPlus, FiTrash2, FiSave, FiDownload, FiEdit, FiEye } from 'react-icons/fi';
+import { FiPlus, FiTrash2, FiSave, FiDownload, FiEdit, FiEye } from 'react-icons/fi'; // Source: https://react-icons.github.io/react-icons/
 import { notesAPI } from '../apiHandler';
+import { useTheme } from '../hooks/useTheme';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
 import ConfirmModal from '../components/ConfirmModal';
@@ -24,6 +25,7 @@ const NotesPage = () => {
     const [initialContent, setInitialContent] = useState('');
     const [confirmModal, setConfirmModal] = useState({ isOpen: false, type: '', data: null });
     const [pendingNoteSelect, setPendingNoteSelect] = useState(null);
+    const { theme } = useTheme();
 
     useEffect(() => {
         fetchNotes();

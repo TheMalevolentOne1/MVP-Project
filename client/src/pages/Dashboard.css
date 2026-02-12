@@ -19,16 +19,14 @@
     margin: 0 auto;
 }
 
-.dashboard-sidebar,
-.dashboard-main {
+.dashboard-sidebar, .dashboard-main {
     background: var(--bg-secondary);
     border-radius: 12px;
     padding: 1.5rem;
     box-shadow: 0 2px 8px var(--shadow);
 }
 
-.dashboard-sidebar h2,
-.dashboard-main h2 {
+.dashboard-sidebar h2, .dashboard-main h2 {
     color: var(--text-primary);
     font-size: 1.25rem;
     margin-bottom: 1.5rem;

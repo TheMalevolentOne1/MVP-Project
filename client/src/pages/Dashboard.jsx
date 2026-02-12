@@ -5,6 +5,8 @@ import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
 import DashboardModal from '../components/DashboardModal';
 import ConfirmModal from '../components/ConfirmModal';
+import { useTheme } from '../hooks/useTheme';
+import { useAuth } from '../hooks/useAuth';
 import './Dashboard.css';
 
 const Dashboard = () => {
@@ -15,6 +17,10 @@ const Dashboard = () => {
     const [modalOpen, setModalOpen] = useState(false);
     const [modalType, setModalType] = useState('note');
     const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, eventId: null });
+    const { theme, setTheme } = useTheme();
+    const { user } = useAuth();
+
+    useEffect(() => {if (!user) { navigate('/login'); } }, [user, navigate]);
 
     useEffect(() => {
         loadDashboardData();

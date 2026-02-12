@@ -1,9 +1,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import './LandingPage.css';
 
 const LandingPage = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
+
+    // Authentication check - if user is already logged in, redirect to dashboard
+    React.useEffect(() => 
+    {
+        if (user) {
+            console.log('You\'re Already Logged In!');
+            navigate('/dashboard');
+        }
+    }, [user, navigate]);
 
     return (
         <div className="landing-page">

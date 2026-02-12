@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'; // toast for showing notifications to the u
 import { FiChevronLeft, FiChevronRight, FiBookOpen, FiDownload, FiUpload } from 'react-icons/fi'; // Importing icons for navigation and actions
 
 import { eventsAPI } from '../apiHandler'; // API handler for making requests to the backend related to events
+import { useTheme } from '../hooks/useTheme'; // Custom hook for managing theme (light/dark mode)
 
 import AppHeader from '../components/AppHeader'; // AppHeader component for displaying the page title
 import Navbar from '../components/Navbar'; // Navbar component for site navigation
@@ -15,6 +16,7 @@ import './CalendarPage.css'; // CSS file for styling the CalendarPage component
 
 const DAYS_IN_WEEK = 7;
 const HOURS_IN_DAY = 24;
+const TIMEZONE = 'GMT';
 
 /*
 Brief: Get the Monday of the week for a given date.
@@ -24,7 +26,7 @@ Brief: Get the Monday of the week for a given date.
 @Return: Date Object
 @ReturnT: Monday of the week.
 */
-const getMonday = ({date}) => 
+const getMonday = (date) => 
 {
     const d = new Date(date);
     const day = d.getDay();
@@ -49,6 +51,7 @@ const CalendarPage = () =>
     const [showTimetableModal, setShowTimetableModal] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [editingEvent, setEditingEvent] = useState(null);
+    const { theme, setTheme } = useTheme();
 
     // Fetch events on initial load and when the URL query parameters change (to handle dashboard "create" parameter)
     useEffect(() => 
@@ -121,19 +124,28 @@ const CalendarPage = () =>
     /*
     Brief: Confirm deletion of an event by calling the delete API and refreshing the events list.
     */
-    const confirmDeleteEvent = async () => {
-        try {
+    const confirmDeleteEvent = async () => 
+    {
+        try 
+        {
             const { data } = await eventsAPI.delete(deleteConfirm.eventId);
-            if (data.success) {
+            if (data.success) 
+            {
                 toast.success('Event deleted');
                 fetchEvents();
-            } else {
+            } 
+            else 
+            {
                 toast.error('Failed to delete event: ' + data.error);
             }
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.error('Error deleting event:', error);
             toast.error('Error deleting event');
-        } finally {
+        } 
+        finally 
+        {
             setDeleteConfirm({ isOpen: false, eventId: null });
         }
     };
@@ -174,14 +186,15 @@ const CalendarPage = () =>
             console.error('Error saving event:', error);
             toast.error('Error saving event');
         }
-    };
+    }
 
     /*
     Brief: Handle click on "Import Timetable" button to open the timetable login modal.
     */
-    const handleExtractTimetable = () => {
+    const handleExtractTimetable = () => 
+    {
         setShowTimetableModal(true);
-    };
+    }
 
     /*
     Brief: Handle submission of timetable login credentials, fetch events from the timetable, and update the calendar.
@@ -193,21 +206,28 @@ const CalendarPage = () =>
     @ReturnT: Resolves if timetable import is successful, otherwise throws an error.
     @ReturnF: Rejects with an error if timetable import fails.
     */
-    const handleTimetableSubmit = async (email, password) => {
-        try {
+    const handleTimetableSubmit = async (email, password) => 
+    {
+        try 
+        {
             const { data } = await eventsAPI.syncTimetable(email, password);
             
-            if (data.success) {
+            if (data.success) 
+            {
                 toast.success(`Imported ${data.imported} events from timetable`);
                 fetchEvents(); // Refresh calendar
-            } else {
+            } 
+            else 
+            {
                 return Promise.reject(new Error(data.error || 'Failed to import timetable'));
             }
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.error('Timetable sync error:', error);
             throw new Error(error.response?.data?.error || 'Failed to import timetable');
         }
-    };
+    }
 
     /*
     Brief: Handle click on "Export" button to download the user's calendar events as an ICS file.
@@ -216,8 +236,10 @@ const CalendarPage = () =>
     @ReturnT: Resolves if export is successful and the download starts, otherwise throws an error.
     @ReturnF: Rejects with an error if export fails.
     */
-    const handleExportICS = async () => {
-        try {
+    const handleExportICS = async () => 
+    {
+        try 
+        {
             const response = await eventsAPI.exportICS();
             
             // Create download link
@@ -231,11 +253,13 @@ const CalendarPage = () =>
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
             toast.success('Calendar exported');
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.error('Error exporting ICS:', error);
             toast.error('Failed to export calendar');
         }
-    };
+    }
 
     /*
     Brief: Handle selection of an ICS file for import
@@ -246,77 +270,98 @@ const CalendarPage = () =>
     @ReturnT: Resolves if import is successful and events are added to the calendar, otherwise throws an error.
     @ReturnF: Rejects with an error if import fails or if the file is invalid.
     */
-    const handleImportICS = async (event) => {
+    const handleImportICS = async (event) => 
+    {
         const file = event.target.files[0];
         if (!file) return;
 
         // Client-side validation
-        if (!file.name.endsWith('.ics')) {
+        if (!file.name.endsWith('.ics')) 
+        {
             toast.error('Please select a valid .ics file');
             event.target.value = '';
             return;
         }
 
-        if (file.size > 1024 * 1024) {
+        if (file.size > 1024 * 1024) 
+        {
             toast.error('File too large. Maximum size is 1MB.');
             event.target.value = '';
             return;
         }
 
-        try {
+        try 
+        {
             const formData = new FormData();
             formData.append('file', file);
 
             const { data } = await eventsAPI.importICS(formData);
             
-            if (data.success) {
+            if (data.success) 
+            {
                 toast.success(`Imported ${data.imported} events`);
-                if (data.errors && data.errors.length > 0) {
+                
+                if (data.errors && data.errors.length > 0) 
+                {
                     toast(`${data.errors.length} events had warnings`, { icon: '⚠️' });
                 }
+                
                 fetchEvents();
-            } else {
+            } 
+            else 
+            {
                 toast.error('Import failed: ' + data.error);
             }
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.error('Error importing ICS:', error);
             toast.error(error.response?.data?.error || 'Failed to import calendar');
-        } finally {
+        } 
+        finally 
+        {
             event.target.value = ''; // Reset file input
         }
-    };
+    }
 
     /*
     Brief: Change the current week being displayed by adding a specified number of days to the current week start date.
 
     @Param1: days - The number of days to add (positive to go forward, negative to go backward).
     */
-    const changeWeek = (days) => {
+    const changeWeek = (days) => 
+    {
         const newWeekStart = new Date(currentWeekStart);
         newWeekStart.setDate(newWeekStart.getDate() + days);
         setCurrentWeekStart(newWeekStart);
-    };
+    }
 
-    const getWeekDates = () => {
+    const getWeekDates = () => 
+    {
         const dates = [];
-        for (let i = 0; i < DAYS_IN_WEEK; i++) {
+        for (let i = 0; i < DAYS_IN_WEEK; i++) 
+        {
             const date = new Date(currentWeekStart);
             date.setDate(currentWeekStart.getDate() + i);
             dates.push(date);
         }
+        
         return dates;
-    };
+    }
 
-    const formatWeekLabel = () => {
+    const formatWeekLabel = () => 
+    {
         const weekDates = getWeekDates();
         const start = weekDates[0];
         const end = weekDates[6];
         const opts = { month: 'short', day: 'numeric' };
-        return `${start.toLocaleDateString('en-US', opts)} - ${end.toLocaleDateString('en-US', opts)}`;
+        return `${start.toLocaleDateString(TIMEZONE, opts)} - ${end.toLocaleDateString(TIMEZONE, opts)}`;
     };
 
-    const isToday = (date) => {
+    const isToday = (date) => 
+    {
         const today = new Date();
+        
         return (
             date.getDate() === today.getDate() &&
             date.getMonth() === today.getMonth() &&
@@ -324,14 +369,17 @@ const CalendarPage = () =>
         );
     };
 
-    const getEventsStartingInSlot = (date, hour) => {
+    const getEventsStartingInSlot = (date, hour) => 
+    {
         const slotStart = new Date(date);
         slotStart.setHours(hour, 0, 0, 0);
+        
         const slotEnd = new Date(slotStart);
         slotEnd.setHours(hour + 1, 0, 0, 0);
 
         return events.filter(event => {
             const eventStart = new Date(event.start);
+            
             // Only return events that START within this hour slot
             return eventStart >= slotStart && eventStart < slotEnd;
         });
@@ -357,12 +405,11 @@ const CalendarPage = () =>
         
         // Calculate height based on duration in hours
         let durationHours = 0;
-        if (startsOnCurrentDay && endsOnCurrentDay) {
-
+        if (startsOnCurrentDay && endsOnCurrentDay) 
+        {
             // Event fully contained in this day
             const durationMs = eventEnd - eventStart;
             durationHours = durationMs / (1000 * 60 * 60); // Convert milliseconds to hours
-
         } 
         else if (startsOnCurrentDay) 
         {
@@ -448,10 +495,10 @@ const CalendarPage = () =>
                                             >
                                                 <div className="event-content">
                                                     <span className="event-time">
-                                                        {new Date(event.start).toLocaleTimeString('en-US', { 
+                                                        {new Date(event.start).toLocaleTimeString(TIMEZONE, { 
                                                             hour: '2-digit', 
                                                             minute: '2-digit' 
-                                                        })} - {new Date(event.end_time).toLocaleTimeString('en-US', { 
+                                                        })} - {new Date(event.end_time).toLocaleTimeString(TIMEZONE, { 
                                                             hour: '2-digit', 
                                                             minute: '2-digit' 
                                                         })}
