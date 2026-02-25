@@ -540,7 +540,6 @@ const CalendarPage = () =>
                                                 key={event.id} 
                                                 className="event-block continuous"
                                                 style={eventStyle}
-                                                onClick={(e) => e.stopPropagation()}
                                             >
                                                 <div className="event-content">
                                                     <span className="event-time">

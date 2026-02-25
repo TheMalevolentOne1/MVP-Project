@@ -78,9 +78,7 @@ const LandingPage = () => {
 
             <footer className="landing-footer">
                 <div className="footer-links">
-                    <a href="#privacy">Privacy Policy</a>
-                    <a href="#terms">Terms of Service</a>
-                    <a href="#contact">Contact</a>
+                    <a href="/privacy-policy">Privacy Policy</a>
                 </div>
                 <p className="footer-copyright">
                     © 2026 Adaptive Study Cipher. All rights reserved.

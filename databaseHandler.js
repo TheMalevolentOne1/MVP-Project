@@ -152,12 +152,12 @@ Brief: Delete a note for a user
 @ReturnT: Success
 @ReturnF: Failure
 */
-const deleteNote = async (uuid, id) => 
-{
+
+const deleteNote = async (uuid, title) => {
     try {
         await pool.execute(
-            'DELETE FROM notes WHERE uuid = ? AND id = ?',
-            [uuid, id]
+            'DELETE FROM notes WHERE uuid = ? AND title = ?',
+            [uuid, title]
         );
         return { success: true };
     } catch (err) {

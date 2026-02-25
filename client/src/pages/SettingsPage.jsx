@@ -241,6 +241,8 @@ const SettingsPage = () => {
                                 {' '}Enable In-App Notifications (Toast Messages)
                             </label>
                         </div>
+                    </section>
+                        {/*
                         <div className="setting-item">
                             <label htmlFor="email_notifications">
                                 <input
@@ -253,6 +255,7 @@ const SettingsPage = () => {
                             </label>
                         </div>
                     </section>
+                    */}
 
                     {/* Timezone
                     <section className="settings-section">
@@ -283,7 +286,7 @@ const SettingsPage = () => {
                     </section>
                     */}
 
-                    {/* University Email */}
+                    {/* University Email
                     <section className="settings-section">
                         <h2>University Email</h2>
                         <div className="setting-item">
@@ -296,7 +299,7 @@ const SettingsPage = () => {
                                 placeholder="your.email@university.edu"
                             />
                         </div>
-                    </section>
+                    </section>*/}
 
                     {/* Time & Date Format */}
                     <section className="settings-section">

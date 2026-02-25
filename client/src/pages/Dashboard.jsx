@@ -151,7 +151,7 @@ const Dashboard = () => {
 
                 {/* Quick Overview */}
                 <div className="dashboard-main">
-                    <h2>Quick Overview</h2>
+                    <h2>Quick Overview (Last 7 Days)</h2>
                     <div className="dashboard-tbd">
                         <p>Welcome to your dashboard!</p>
                         

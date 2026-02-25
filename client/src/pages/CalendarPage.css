@@ -98,21 +98,6 @@
     box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
 }
 
-.ics-btn.import {
-    background: linear-gradient(135deg, #e67e22, #d35400);
-}
-
-.ics-btn.import:hover {
-    box-shadow: 0 4px 12px rgba(230, 126, 34, 0.4);
-}
-
-.calendar-scroll-area {
-    overflow-x: auto;
-    background: white;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
 .calendar-grid {
     display: grid;
     grid-template-columns: 80px repeat(7, 1fr); /* 1 column for time labels + 7 for days of the week */
@@ -141,8 +126,11 @@
     color: #2c3e50;
 }
 
+
 .grid-slot {
-    height: 60px;
+    overflow: hidden;
+    min-height: 60px;
+    height: auto;
     border: 1px solid #bdc3c7;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -151,7 +139,10 @@
 }
 
 .grid-slot:hover {
-    background-color: #ecf0f1;
+    overflow: visible;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .event-block {
