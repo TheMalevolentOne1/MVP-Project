@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { authAPI, settingsAPI } from '../apiHandler';
+import { showToast } from '../showToast';
+import { authAPI, settingsAPI } from '../apiHandler'; 
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import AppHeader from '../components/AppHeader';
@@ -9,32 +9,65 @@ import Navbar from '../components/Navbar';
 import DeleteAccountModal from '../components/DeleteAccountModal';
 import './SettingsPage.css';
 
+/*const FONT_OPTIONS = [
+    'Arial',
+    'Helvetica',
+    'Times New Roman',
+    'Georgia',
+    'Courier New',
+    'Verdana',
+    'Trebuchet MS',
+    'Palatino',
+    'Garamond'
+];*/
+
+/*
+Brief: Settings page component for managing user preferences including theme, notifications, timezone, and account settings.
+
+@Returns: JSX.Element
+@ReturnT: Renders the settings page with all preference controls.
+*/
 const SettingsPage = () => {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
     const { changeTheme, getThemePreference } = useTheme();
+    
     const [settings, setSettings] = useState(() => ({
         theme: localStorage.getItem('theme') || 'light',
-        time_format: '12h',
-        date_format: 'MM/DD/YYYY'
+        notifications_enabled: localStorage.getItem('notifications_enabled') ? localStorage.getItem('notifications_enabled') : true,
+        email_notifications: localStorage.getItem('email_notifications') ? localStorage.getItem('email_notifications') : false,
+        timezone: 'UTC',
+        time_format: '24h',
+        date_format: 'DD/MM/YYYY',
+        font_choice: localStorage.getItem('font_choice') || 'Default',
+        university_email: user?.email || ''
     }));
+
+    const [initialSettings, setInitialSettings] = useState(null);
     const [loading, setLoading] = useState(true);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
+    // Derived — true when current settings differ from last saved state
+    const hasUpdatedSettings = initialSettings ? JSON.stringify(settings) !== JSON.stringify(initialSettings) : false;
+
+    /*
+    Brief: Fetch user settings from the API and populate the settings state.
+    
+    @ReturnT: Settings are loaded and state is updated.
+    */
     const fetchSettings = useCallback(async () => {
         try {
             const { data } = await settingsAPI.get();
+
             if (data.success) {
-                // Get current theme preference (light/dark/auto) from localStorage
                 const currentTheme = getThemePreference();
-                setSettings({
-                    ...data.settings,
-                    theme: currentTheme
-                });
+                
+                const loaded = { ...data.settings, theme: currentTheme };
+                setSettings(loaded);
+                setInitialSettings(loaded); // Snapshot for unsaved changes tracking
             }
         } catch (error) {
             console.error('Failed to fetch settings:', error);
-            // Set defaults with current theme if fetch fails
             const currentTheme = getThemePreference();
             setSettings(prev => ({ ...prev, theme: currentTheme }));
         } finally {
@@ -42,69 +75,102 @@ const SettingsPage = () => {
         }
     }, [getThemePreference]);
 
+    /*
+    Brief: Load settings on component mount.
+    */
     useEffect(() => {
         fetchSettings();
     }, [fetchSettings]);
 
-    const handleChange = (field, value) => {
+    /*
+    Brief: Handle individual setting changes and apply theme immediately if theme is changed.
+    
+    @Param1: field - The setting field key to update.
+    @Param2: value - The new value for the field.
+    */
+    const handleChange = useCallback((field, value) => {
         setSettings(prev => ({ ...prev, [field]: value }));
         
-        // Apply theme change immediately
         if (field === 'theme') {
             changeTheme(value);
         }
-    };
+    }, [changeTheme]);
 
-    const handleSave = async () => {
+    /*
+    Brief: Save all settings to the API and persist locally (font choice, notifications).
+    
+    @ReturnT: Settings are persisted to backend and toast notification is shown.
+    @ReturnF: Error toast is shown if save fails.
+    */
+    const handleSave = useCallback(async () => {
         try {
-            // Update theme context first
             changeTheme(settings.theme);
             
-            // Filter out unsupported fields before sending to backend
             const filteredSettings = {
                 theme: settings.theme,
                 notifications_enabled: settings.notifications_enabled,
+                email_notifications: settings.email_notifications,
+                timezone: settings.timezone,
                 time_format: settings.time_format,
-                date_format: settings.date_format
+                date_format: settings.date_format,
+                font_choice: settings.font_choice,
+                university_email: settings.university_email
             };
             
-            // Save to backend
             const { data } = await settingsAPI.update(filteredSettings);
+            
             if (data.success) {
-                toast.success('Settings saved!');
+                // Persist local settings to localStorage
+                localStorage.setItem('font_choice', settings.font_choice);
+                localStorage.setItem('notifications_enabled', JSON.stringify(settings.notifications_enabled));
+                localStorage.setItem('email_notifications', JSON.stringify(settings.email_notifications));
+
+                // Reset initial settings to match current settings (clears unsaved indicator)
+                setInitialSettings({ ...settings });
+                showToast('Settings saved!', 'success');
             } else {
-                toast.error(data.error || 'Failed to save settings');
+                showToast(data.error || 'Failed to save settings', 'error');
             }
         } catch (error) {
             console.error('Error saving settings:', error);
+            
             if (error.response?.status === 401) {
-                toast.error('Session expired. Please log in again.');
+                showToast('Session expired. Please log in again.', 'error');
                 setTimeout(() => navigate('/login'), 2000);
             } else {
-                toast.error(error.response?.data?.error || 'Error saving settings');
+                showToast(error.response?.data?.error || 'Error saving settings', 'error');
             }
         }
-    };
+    }, [settings, changeTheme, navigate]);
 
-    const handleDeleteAccount = () => {
+    /*
+    Brief: Show the delete account confirmation modal.
+    */
+    const handleDeleteAccount = useCallback(() => {
         setShowDeleteModal(true);
-    };
+    }, []);
 
-    const confirmDeleteAccount = async () => {
+    /*
+    Brief: Confirm and execute account deletion from the API, then redirect to home.
+    
+    @ReturnT: Account is deleted and user is logged out.
+    @ReturnF: Error toast is shown if deletion fails.
+    */
+    const confirmDeleteAccount = useCallback(async () => {
         try {
             const { data } = await authAPI.deleteAccount();
             if (data.success) {
-                toast.success('Account deleted');
+                showToast('Account deleted', 'success');
                 await logout();
                 navigate('/');
             } else {
-                toast.error('Failed to delete account: ' + (data.error || 'Unknown error'));
+                showToast('Failed to delete account: ' + (data.error || 'Unknown error'), 'error');
             }
         } catch (error) {
             console.error('Error deleting account:', error);
-            toast.error('An error occurred while deleting your account.');
+            showToast('An error occurred while deleting your account.', 'error');
         }
-    };
+    }, [logout, navigate]);
 
     if (loading) {
         return (
@@ -130,7 +196,7 @@ const SettingsPage = () => {
                             <label htmlFor="theme">Theme</label>
                             <select
                                 id="theme"
-                                value={getThemePreference()}
+                                value={settings.theme}
                                 onChange={(e) => handleChange('theme', e.target.value)}
                             >
                                 <option value="light">Light</option>
@@ -139,6 +205,101 @@ const SettingsPage = () => {
                             </select>
                         </div>
                     </section>
+
+                    {/* Font
+                    <section className="settings-section">
+                        <h2>Font</h2>
+                        <div className="setting-item">
+                            <label htmlFor="font">Font</label>
+                            <select
+                                id="font"
+                                value={settings.font_choice || 'Default'}
+                                onChange={(e) => handleChange('font_choice', e.target.value)}
+                            >
+                                <option value="Default">Default</option>
+                                {FONT_OPTIONS.map(font => (
+                                    <option key={font} value={font} style={{ fontFamily: font }}>
+                                        {font}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </section>
+                    */}
+
+                    {/* Notifications */}
+                    <section className="settings-section">
+                        <h2>Notifications</h2>
+                        <div className="setting-item">
+                            <label htmlFor="notifications_enabled">
+                                <input
+                                    type="checkbox"
+                                    id="notifications_enabled"
+                                    checked={settings.notifications_enabled || false}
+                                    onChange={(e) => handleChange('notifications_enabled', e.target.checked)}
+                                />
+                                {' '}Enable In-App Notifications (Toast Messages)
+                            </label>
+                        </div>
+                    </section>
+                        {/*
+                        <div className="setting-item">
+                            <label htmlFor="email_notifications">
+                                <input
+                                    type="checkbox"
+                                    id="email_notifications"
+                                    checked={settings.email_notifications || false}
+                                    onChange={(e) => handleChange('email_notifications', e.target.checked)}
+                                />
+                                {' '}Enable Email Notifications
+                            </label>
+                        </div>
+                    </section>
+                    */}
+
+                    {/* Timezone
+                    <section className="settings-section">
+                        <h2>Timezone</h2>
+                        <div className="setting-item">
+                            <label htmlFor="timezone">Timezone</label>
+                            <select
+                                id="timezone"
+                                value={settings.timezone || 'UTC'}
+                                onChange={(e) => handleChange('timezone', e.target.value)}
+                            >
+                                <option value="UTC">UTC</option>
+                                <option value="America/New_York">Eastern Time (ET)</option>
+                                <option value="America/Chicago">Central Time (CT)</option>
+                                <option value="America/Denver">Mountain Time (MT)</option>
+                                <option value="America/Los_Angeles">Pacific Time (PT)</option>
+                                <option value="America/Anchorage">Alaska Time (AKT)</option>
+                                <option value="Pacific/Honolulu">Hawaii Time (HT)</option>
+                                <option value="Europe/London">London (GMT/BST)</option>
+                                <option value="Europe/Paris">Paris (CET/CEST)</option>
+                                <option value="Europe/Berlin">Berlin (CET/CEST)</option>
+                                <option value="Asia/Tokyo">Tokyo (JST)</option>
+                                <option value="Asia/Shanghai">Shanghai (CST)</option>
+                                <option value="Asia/Dubai">Dubai (GST)</option>
+                                <option value="Australia/Sydney">Sydney (AEDT/AEST)</option>
+                            </select>
+                        </div>
+                    </section>
+                    */}
+
+                    {/* University Email
+                    <section className="settings-section">
+                        <h2>University Email</h2>
+                        <div className="setting-item">
+                            <label htmlFor="university_email">Email</label>
+                            <input
+                                type="email"
+                                id="university_email"
+                                value={settings.university_email || ''}
+                                onChange={(e) => handleChange('university_email', e.target.value)}
+                                placeholder="your.email@university.edu"
+                            />
+                        </div>
+                    </section>*/}
 
                     {/* Time & Date Format */}
                     <section className="settings-section">
@@ -171,6 +332,9 @@ const SettingsPage = () => {
 
                     {/* Save Button */}
                     <div className="settings-actions">
+                        {hasUpdatedSettings && (
+                            <div className="unsaved-indicator">⚠️ Unsaved changes</div>
+                        )}
                         <button onClick={handleSave} className="save-btn">
                             Save Settings
                         </button>

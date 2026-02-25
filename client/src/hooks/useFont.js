@@ -2,28 +2,71 @@ import { useState, useEffect } from 'react';
 import WebFont from 'webfontloader';
 
 /*
-Brief: Load Google Fonts.
+Brief: Custom hook to load and manage Google Fonts in the application.
 
-@Param1: fontFamilies - An array of font family names to load from Google Fonts.
+@Param1: fontFamily - The name of the Google Font family to load (e.g., 'Roboto', 'Open Sans').
 
 @Return: Object
-@ReturnT: An object containing the loading state of the fonts (isLoading).
-@ReturnF: Returns an object with isLoading set to true while fonts are loading, and false once loaded or if there was an error.
+@ReturnT: A resolved promise with the list of loaded font families if successful
+@ReturnF: An error if font loading fails.
 */
-export const useFont = (fontFamilies) => 
+export const getAllFonts = async () =>
 {
+    return new Promise((res, rej) =>
+    {
+        WebFont.load(
+        {
+            google: 
+            { 
+                families: ['sans-serif', 'serif', 'monospace'] // default fonts to ensure we get some results
+            },
+            active: () => res(WebFont.getActiveFamilies()), // resolve with the list of loaded font families
+            inactive: () => rej(new Error('Failed to load fonts')) // reject if loading fails
+        });
+    });
+}
+
+/*
+Brief: useFont, custom hook that loads a specified Google Font and manages its loading state.
+
+@Param1: fontFamily - The name of the Google Font family to load (e.g., 'Roboto', 'Open Sans').
+
+@Return: Object
+@ReturnT: An object containing isLoading, isError, and applyFont function to manage font loading and application.
+@ReturnF: An error if font loading fails.
+*/
+export const useFont = (fontFamily) => {
     const [isLoading, setIsLoading] = useState(true);
-    const [loadedFonts, setLoadedFonts] = useState([]);
-    
+    const [isError, setIsError] = useState(false);
+
     useEffect(() => {
+        if (!fontFamily || fontFamily === 'Default') {
+            setIsLoading(false);
+            setIsError(false);
+            return;
+        }
+        setIsLoading(true);
+        setIsError(false);
         WebFont.load({
-            google: { 
-                families: fontFamilies
+            google: {
+                families: [fontFamily]
             },
             active: () => setIsLoading(false),
-            inactive: () => setIsLoading(false) // Handle font load failure
+            inactive: () => {
+                setIsLoading(false);
+                setIsError(true);
+            }
         });
-    }, [fontFamilies]);
+    }, [fontFamily]);
 
-    return { isLoading };
+    // Helper to apply the font to the document body
+    const applyFont = () => {
+        if (!fontFamily || fontFamily === 'Default') {
+            document.body.style.fontFamily = '';
+        } else {
+            document.body.style.fontFamily = fontFamily + ', sans-serif';
+        }
+    };
+
+    return { isLoading, isError, applyFont };
 };

@@ -1,91 +1,71 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 /*
-Brief: Handle user login by calling the login API and updating the user state on success.
-@Param1: email - The user's email for login.
-@Param2: password - The user's password for login.
-
-@Return: Boolean
-@ReturnT: True if login is successful, otherwise throws an error.
-@ReturnF: Returns false if login fails.
-*/
-
-/*
-Brief: Custom hook to manage theme (light/dark/auto) with persistence in localStorage and system preference support.
+Brief: useTheme, custom hook to manage theme preferences (light/dark/auto) with persistence in localStorage and system preference detection.
 
 @Return: Object
-@ReturnT: An object containing the current theme, a function to change the theme, and a function to get the stored theme preference.
+@ReturnT: An object containing the current theme, a function to change the theme, and a function to get the current theme preference.
+@ReturnF: An error if theme loading fails.
 */
 export const useTheme = () => {
+    /* 
+    Brief: Initialize theme state by checking localStorage for saved preference, falling back to system preference if set to 'auto' or not set.
+    @Return: String
+    @ReturnT: The current theme ('light', 'dark', or 'auto').
+    */
     const [theme, setTheme] = useState(() => {
-        // Check localStorage first
         const savedTheme = localStorage.getItem('theme');
-        
         if (savedTheme === 'auto' || !savedTheme) {
-            // Use system preference for auto or default
             if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
                 return 'dark';
             }
             return 'light';
         }
-        
         return savedTheme;
     });
 
+    /*
+    Brief: Effect to apply the current theme by setting a data attribute on the document element, allowing CSS to target it for theming.
+    */
     useEffect(() => {
-        // Apply theme to document
         document.documentElement.setAttribute('data-theme', theme);
     }, [theme]);
 
+    /*
+    Brief: Effect to listen for system theme changes when 'auto' is selected, updating the theme accordingly.
+    */
     useEffect(() => {
-        // Listen for system theme changes when in auto mode
         const savedTheme = localStorage.getItem('theme');
-        
         if (savedTheme === 'auto') {
             const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-            
             const handleChange = (e) => {
                 setTheme(e.matches ? 'dark' : 'light');
             };
-            
-            // Set initial value
             setTheme(mediaQuery.matches ? 'dark' : 'light');
-            
             mediaQuery.addEventListener('change', handleChange);
             return () => mediaQuery.removeEventListener('change', handleChange);
         }
     }, []);
 
     /*
-    Brief: Change the theme and store the preference in localStorage. If
-    the new theme is 'auto', it applies the current system preference immediately.
-    
-    @Param1: newTheme - The new theme to apply ('light', 'dark', or 'auto').
+    Brief: Function to change the theme preference, saving it to localStorage and updating the theme state. If 'auto' is selected, it will set the theme based on system preference.
+
+    @Param1: newTheme - The new theme preference ('light', 'dark', or 'auto').
     */
-    const changeTheme = (newTheme) => 
-    {
-        // Always store the preference (including 'auto')
+    const changeTheme = useCallback((newTheme) => {
         localStorage.setItem('theme', newTheme);
-        
-        if (newTheme === 'auto') 
-        {
-            // Apply current system preference immediately
+        if (newTheme === 'auto') {
             const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
             setTheme(isDark ? 'dark' : 'light');
         } else {
             setTheme(newTheme);
         }
-    };
+    }, []);
 
-    /*
-    Brief: Get the actual preference (light/dark/auto) vs applied theme
-
-    @Return: String
-    @ReturnT: The stored theme preference ('light', 'dark', or 'auto').
-    */
-    const getThemePreference = () => {
+    // Brief: Function to retrieve the current theme preference from localStorage, defaulting to 'light' if not set.
+    const getThemePreference = useCallback(() => {
         return localStorage.getItem('theme') || 'light';
-    };
+    }, []);
 
     return { theme, changeTheme, getThemePreference };
 };

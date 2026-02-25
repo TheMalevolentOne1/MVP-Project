@@ -1,9 +1,27 @@
 import React from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 import './LandingPage.css';
 
+/*
+Brief: LandingPage component that serves as the entry point for users visiting the app. It provides an overview of the app's features and encourages users to sign up or log in.
+
+@Return: JSX Element
+@ReturnT: The LandingPage component that can be used as the homepage for the app, providing information about the app and navigation options for users to log in or register.
+*/
 const LandingPage = () => {
     const navigate = useNavigate();
+    const { user } = useAuth();
+
+    // Authentication check - if user is already logged in, redirect to dashboard
+    useEffect(() => 
+    {
+        if (user) {
+            console.log('You\'re Already Logged In!');
+            navigate('/dashboard');
+        }
+    }, [user, navigate]);
 
     return (
         <div className="landing-page">
@@ -60,9 +78,7 @@ const LandingPage = () => {
 
             <footer className="landing-footer">
                 <div className="footer-links">
-                    <a href="#privacy">Privacy Policy</a>
-                    <a href="#terms">Terms of Service</a>
-                    <a href="#contact">Contact</a>
+                    <a href="/privacy-policy">Privacy Policy</a>
                 </div>
                 <p className="footer-copyright">
                     © 2026 Adaptive Study Cipher. All rights reserved.

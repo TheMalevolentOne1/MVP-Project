@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react'; // useState for component state management and useEffect for functions that run after render
+import { useTheme } from '../hooks/useTheme';
 import { useLocation } from 'react-router-dom'; // useLocation to access the current URL and query parameters
-import toast from 'react-hot-toast'; // toast for showing notifications to the user
+import { showToast } from '../showToast'; // Utility function to show notifications respecting user preferences
 import { FiChevronLeft, FiChevronRight, FiBookOpen, FiDownload, FiUpload } from 'react-icons/fi'; // Importing icons for navigation and actions
 
-import { eventsAPI } from '../apiHandler'; // API handler for making requests to the backend related to events
+import { eventsAPI, timetableAPI } from '../apiHandler'; // API handler for making requests to the backend related to events
 
 import AppHeader from '../components/AppHeader'; // AppHeader component for displaying the page title
 import Navbar from '../components/Navbar'; // Navbar component for site navigation
@@ -15,6 +16,7 @@ import './CalendarPage.css'; // CSS file for styling the CalendarPage component
 
 const DAYS_IN_WEEK = 7;
 const HOURS_IN_DAY = 24;
+const TIMEZONE = 'GMT';
 
 /*
 Brief: Get the Monday of the week for a given date.
@@ -24,7 +26,7 @@ Brief: Get the Monday of the week for a given date.
 @Return: Date Object
 @ReturnT: Monday of the week.
 */
-const getMonday = ({date}) => 
+const getMonday = (date) => 
 {
     const d = new Date(date);
     const day = d.getDay();
@@ -41,6 +43,9 @@ allows users to create, edit, delete events, and import/export calendar data.
 */
 const CalendarPage = () => 
 {
+    // Ensure theme is applied on mount
+    useTheme();
+    
     const location = useLocation();
 
     const [events, setEvents] = useState([]);
@@ -49,12 +54,12 @@ const CalendarPage = () =>
     const [showTimetableModal, setShowTimetableModal] = useState(false);
     const [selectedSlot, setSelectedSlot] = useState(null);
     const [editingEvent, setEditingEvent] = useState(null);
+    // Removed unused theme and setTheme
 
     // Fetch events on initial load and when the URL query parameters change (to handle dashboard "create" parameter)
     useEffect(() => 
     {
         fetchEvents();
-        
         // Check for create parameter from dashboard
         const params = new URLSearchParams(location.search);
         if (params.get('create') === 'true') 
@@ -121,19 +126,31 @@ const CalendarPage = () =>
     /*
     Brief: Confirm deletion of an event by calling the delete API and refreshing the events list.
     */
-    const confirmDeleteEvent = async () => {
-        try {
+    const confirmDeleteEvent = async () => 
+    {
+        try 
+        {
             const { data } = await eventsAPI.delete(deleteConfirm.eventId);
-            if (data.success) {
-                toast.success('Event deleted');
+
+            console.log(`${deleteConfirm.eventId} delete response:`, data); // Log the response for debugging
+            
+            if (data.success) 
+            {
+                showToast('Event deleted', 'success');
                 fetchEvents();
-            } else {
-                toast.error('Failed to delete event: ' + data.error);
+            } 
+            else 
+            {
+                showToast('Failed to delete event: ' + data.error, 'error');
             }
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.error('Error deleting event:', error);
-            toast.error('Error deleting event');
-        } finally {
+            showToast('Error deleting event', 'error');
+        } 
+        finally 
+        {
             setDeleteConfirm({ isOpen: false, eventId: null });
         }
     };
@@ -161,27 +178,28 @@ const CalendarPage = () =>
 
             if (response.data.success) 
             {
-                toast.success(eventId ? 'Event updated' : 'Event created');
+                showToast(eventId ? 'Event updated' : 'Event created', 'success');
                 fetchEvents();
             } 
             else 
             {
-                toast.error('Failed to save event: ' + response.data.error);
+                showToast('Failed to save event: ' + response.data.error, 'error');
             }
         } 
         catch (error) 
         {
             console.error('Error saving event:', error);
-            toast.error('Error saving event');
+            showToast('Error saving event', 'error');
         }
-    };
+    }
 
     /*
     Brief: Handle click on "Import Timetable" button to open the timetable login modal.
     */
-    const handleExtractTimetable = () => {
+    const handleExtractTimetable = () => 
+    {
         setShowTimetableModal(true);
-    };
+    }
 
     /*
     Brief: Handle submission of timetable login credentials, fetch events from the timetable, and update the calendar.
@@ -193,21 +211,43 @@ const CalendarPage = () =>
     @ReturnT: Resolves if timetable import is successful, otherwise throws an error.
     @ReturnF: Rejects with an error if timetable import fails.
     */
-    const handleTimetableSubmit = async (email, password) => {
-        try {
-            const { data } = await eventsAPI.syncTimetable(email, password);
+    const handleTimetableSubmit = async (user_data) => 
+    {
+        const { email, password } = user_data;
+
+        try 
+        {
+            console.log('Sending timetable sync request:', { email, password: '***' }); // Log request (hide password)
             
-            if (data.success) {
-                toast.success(`Imported ${data.imported} events from timetable`);
-                fetchEvents(); // Refresh calendar
-            } else {
-                return Promise.reject(new Error(data.error || 'Failed to import timetable'));
+            const { data } = await timetableAPI.sync(email, password);
+
+            if (data.success) 
+            {
+                showToast(`Imported ${data.imported} events from timetable`, 'success');
+                
+                if (data.errors && data.errors.length > 0)
+                {
+                    showToast(`${data.errors.length} events had warnings during import`, 'custom');
+                    console.warn('Timetable import warnings:', data.errors);
+                }
+
+                fetchEvents();
+            } 
+            else 
+            {
+                showToast('Failed to import timetable: ' + data.error, 'error');
             }
-        } catch (error) {
-            console.error('Timetable sync error:', error);
-            throw new Error(error.response?.data?.error || 'Failed to import timetable');
+        } 
+        catch (error) 
+        {
+            console.error('Error importing timetable:', error);
+            console.error('Error response:', error.response?.data); // ← Add this
+            console.error('Error status:', error.response?.status); // ← Add this
+            console.error('Request data:', { email, password: '***' }); // ← Add this
+            showToast(error.response?.data?.error || 'Failed to import timetable', 'error');
         }
-    };
+    }
+    
 
     /*
     Brief: Handle click on "Export" button to download the user's calendar events as an ICS file.
@@ -216,8 +256,10 @@ const CalendarPage = () =>
     @ReturnT: Resolves if export is successful and the download starts, otherwise throws an error.
     @ReturnF: Rejects with an error if export fails.
     */
-    const handleExportICS = async () => {
-        try {
+    const handleExportICS = async () => 
+    {
+        try 
+        {
             const response = await eventsAPI.exportICS();
             
             // Create download link
@@ -230,12 +272,14 @@ const CalendarPage = () =>
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
-            toast.success('Calendar exported');
-        } catch (error) {
+            showToast('Calendar exported', 'success');
+        } 
+        catch (error) 
+        {
             console.error('Error exporting ICS:', error);
-            toast.error('Failed to export calendar');
+            showToast('Failed to export calendar', 'error');
         }
-    };
+    }
 
     /*
     Brief: Handle selection of an ICS file for import
@@ -246,76 +290,109 @@ const CalendarPage = () =>
     @ReturnT: Resolves if import is successful and events are added to the calendar, otherwise throws an error.
     @ReturnF: Rejects with an error if import fails or if the file is invalid.
     */
-    const handleImportICS = async (event) => {
+    const handleImportICS = async (event) => 
+    {
         const file = event.target.files[0];
         if (!file) return;
 
         // Client-side validation
-        if (!file.name.endsWith('.ics')) {
-            toast.error('Please select a valid .ics file');
+        if (!file.name.endsWith('.ics')) 
+        {
+            showToast('Please select a valid .ics file', 'error');
             event.target.value = '';
             return;
         }
 
-        if (file.size > 1024 * 1024) {
-            toast.error('File too large. Maximum size is 1MB.');
+        if (file.size > 1024 * 1024) 
+        {
+            showToast('File too large. Maximum size is 1MB.', 'error');
             event.target.value = '';
             return;
         }
 
-        try {
+        try 
+        {
             const formData = new FormData();
             formData.append('file', file);
 
             const { data } = await eventsAPI.importICS(formData);
             
-            if (data.success) {
-                toast.success(`Imported ${data.imported} events`);
-                if (data.errors && data.errors.length > 0) {
-                    toast(`${data.errors.length} events had warnings`, { icon: '⚠️' });
+            if (data.success) 
+            {
+                showToast(`Imported ${data.imported} events`, 'success');
+                
+                if (data.errors && data.errors.length > 0) 
+                {
+                    showToast(`${data.errors.length} events had warnings`, 'custom');
                 }
+                
                 fetchEvents();
-            } else {
-                toast.error('Import failed: ' + data.error);
+            } 
+            else 
+            {
+                showToast('Import failed: ' + data.error, 'error');
             }
-        } catch (error) {
+        } 
+        catch (error) 
+        {
             console.error('Error importing ICS:', error);
-            toast.error(error.response?.data?.error || 'Failed to import calendar');
-        } finally {
+            showToast(error.response?.data?.error || 'Failed to import calendar', 'error');
+        } 
+        finally 
+        {
             event.target.value = ''; // Reset file input
         }
-    };
+    }
 
     /*
     Brief: Change the current week being displayed by adding a specified number of days to the current week start date.
 
     @Param1: days - The number of days to add (positive to go forward, negative to go backward).
     */
-    const changeWeek = (days) => {
-        const newWeekStart = new Date(currentWeekStart);
-        newWeekStart.setDate(newWeekStart.getDate() + days);
-        setCurrentWeekStart(newWeekStart);
+    const changeWeek = (days) => 
+    {
+        setCurrentWeekStart(new Date(currentWeekStart.getTime() + days * 24 * 60 * 60 * 1000));
     };
 
-    const getWeekDates = () => {
+    /*
+    Brief: Format the week label for display on the calendar, showing the date range of the current week.
+
+    @Return: String
+    @ReturnT: A formatted string representing the week range.
+    */
+    const formatWeekLabel = () => 
+    {
+        const weekEnd = new Date(currentWeekStart.getTime() + 6 * 24 * 60 * 60 * 1000); // Calculate the end date of the week by adding 6 days to the start date
+        const options = { month: 'short', day: 'numeric' };
+        return `${currentWeekStart.toLocaleDateString('en-GB', options)} - ${weekEnd.toLocaleDateString('en-GB', options)}`;
+    };
+
+    /*
+    Brief: Get all dates in the current week starting from Monday.
+
+    @Return: Array of Date Objects
+    @ReturnT: Array containing the dates of the current week.
+    */
+    const getWeekDates = () => 
+    {
         const dates = [];
-        for (let i = 0; i < DAYS_IN_WEEK; i++) {
-            const date = new Date(currentWeekStart);
-            date.setDate(currentWeekStart.getDate() + i);
-            dates.push(date);
+        for (let i = 0; i < DAYS_IN_WEEK; i++) 
+        {
+            dates.push(new Date(currentWeekStart.getTime() + i * 24 * 60 * 60 * 1000));
         }
         return dates;
     };
 
-    const formatWeekLabel = () => {
-        const weekDates = getWeekDates();
-        const start = weekDates[0];
-        const end = weekDates[6];
-        const opts = { month: 'short', day: 'numeric' };
-        return `${start.toLocaleDateString('en-US', opts)} - ${end.toLocaleDateString('en-US', opts)}`;
-    };
+    /*
+    Brief: Check if a given date is today.
 
-    const isToday = (date) => {
+    @Param1: date - The date to check.
+
+    @Return: Boolean
+    @ReturnT: True if the date is today, false otherwise.
+    */
+    const isToday = (date) => 
+    {
         const today = new Date();
         return (
             date.getDate() === today.getDate() &&
@@ -324,54 +401,68 @@ const CalendarPage = () =>
         );
     };
 
-    const getEventsStartingInSlot = (date, hour) => {
-        const slotStart = new Date(date);
-        slotStart.setHours(hour, 0, 0, 0);
-        const slotEnd = new Date(slotStart);
-        slotEnd.setHours(hour + 1, 0, 0, 0);
+    /*
+    Brief: Get all events that start in a specific time slot (day and hour).
 
+    @Param1: slotDate - The date of the slot.
+    @Param2: slotHour - The hour of the slot (0-23).
+
+    @Return: Array of Event Objects
+    @ReturnT: Array containing all events that start in the specified slot.
+    */
+    const getEventsStartingInSlot = (slotDate, slotHour) => 
+    {
         return events.filter(event => {
             const eventStart = new Date(event.start);
-            // Only return events that START within this hour slot
-            return eventStart >= slotStart && eventStart < slotEnd;
+            return (
+                eventStart.getDate() === slotDate.getDate() &&
+                eventStart.getMonth() === slotDate.getMonth() &&
+                eventStart.getFullYear() === slotDate.getFullYear() &&
+                eventStart.getHours() === slotHour
+            );
         });
     };
 
-    const calculateEventStyle = (event, slotDate = null) => 
+    /*
+    Brief: Calculate the CSS style for an event block based on its start and end times relative to a given date.
+
+    @Param1: event - The event object containing start and end_time.
+    @Param2: slotDate - The date of the slot where the event is being rendered.
+
+    @Return: Object
+    @ReturnT: An object containing CSS properties (top, height, minHeight) for positioning the event block.
+    */
+    const calculateEventStyle = (event, slotDate) => 
     {
         const eventStart = new Date(event.start);
         const eventEnd = new Date(event.end_time);
-        const currentSlotDate = slotDate ? new Date(slotDate) : new Date(eventStart); // Get current day being rendered
-        
-        // Check if event spans multiple days
-        const startsOnCurrentDay = eventStart.toDateString() === currentSlotDate.toDateString();
-        const endsOnCurrentDay = eventEnd.toDateString() === currentSlotDate.toDateString();
-        
-        // Calculate top offset based on minutes past the hour
-        let topOffset = 0;
-        if (startsOnCurrentDay) 
-        {
-            const startMinutes = eventStart.getMinutes();
-            topOffset = (startMinutes / 60) * 100;
-        }
-        
-        // Calculate height based on duration in hours
-        let durationHours = 0;
-        if (startsOnCurrentDay && endsOnCurrentDay) {
+        const dayStart = new Date(slotDate);
+        dayStart.setHours(0, 0, 0, 0); // Start of the day
+        const dayEnd = new Date(slotDate);
+        dayEnd.setHours(23, 59, 59, 999); // End of the day
 
-            // Event fully contained in this day
-            const durationMs = eventEnd - eventStart;
-            durationHours = durationMs / (1000 * 60 * 60); // Convert milliseconds to hours
+        const startsOnCurrentDay = eventStart >= dayStart && eventStart <= dayEnd;
+        const endsOnCurrentDay = eventEnd >= dayStart && eventEnd <= dayEnd;
+
+        let topOffset = 0;
+        let durationHours = 0;
+
+        if (startsOnCurrentDay && endsOnCurrentDay) 
+        {
+            // Event starts and ends on the same day
+            const startMinutes = eventStart.getHours() + eventStart.getMinutes() / 60;
+            const endMinutes = eventEnd.getHours() + eventEnd.getMinutes() / 60;
+            durationHours = endMinutes - startMinutes;
+            topOffset = (startMinutes % 1) * 100; // Percentage within the hour
 
         } 
         else if (startsOnCurrentDay) 
         {
-
-            // Event starts today, ends tomorrow or later
-            const dayEnd = new Date(eventStart);
-            dayEnd.setHours(23, 59, 59, 999);
+            // Event starts today but ends later
+            const startMinutes = eventStart.getHours() + eventStart.getMinutes() / 60;
             const durationMs = dayEnd - eventStart;
             durationHours = durationMs / (1000 * 60 * 60);
+            topOffset = (startMinutes % 1) * 100;
 
         } 
         else if (endsOnCurrentDay) 
@@ -401,13 +492,18 @@ const CalendarPage = () =>
         };
     };
 
+    /*
+    Brief: Render the calendar grid for the current week, including day headers and time slots, and populate it with event blocks based on the events data.
+
+    @Return: JSX Element
+    @ReturnT: A JSX element representing the calendar grid, with day headers at the top and time slots for each hour of each day, populated with event blocks that are styled according to their start and end times.
+    */
     const renderGrid = () => {
         const weekDates = getWeekDates();
         const dayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
         return (
             <div className="calendar-grid">
-                {/* Top-left corner cell */}
                 <div className="grid-header-cell"></div>
                 
                 {/* Day headers */}
@@ -444,14 +540,13 @@ const CalendarPage = () =>
                                                 key={event.id} 
                                                 className="event-block continuous"
                                                 style={eventStyle}
-                                                onClick={(e) => e.stopPropagation()}
                                             >
                                                 <div className="event-content">
                                                     <span className="event-time">
-                                                        {new Date(event.start).toLocaleTimeString('en-US', { 
+                                                        {new Date(event.start).toLocaleTimeString(TIMEZONE, { 
                                                             hour: '2-digit', 
                                                             minute: '2-digit' 
-                                                        })} - {new Date(event.end_time).toLocaleTimeString('en-US', { 
+                                                        })} - {new Date(event.end_time).toLocaleTimeString(TIMEZONE, { 
                                                             hour: '2-digit', 
                                                             minute: '2-digit' 
                                                         })}
@@ -476,7 +571,7 @@ const CalendarPage = () =>
                                                             handleDeleteEvent(event.id);
                                                         }}
                                                     >
-                                                        ×
+                                                        🗑
                                                     </button>
                                                 </div>
                                             </div>

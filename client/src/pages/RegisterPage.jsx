@@ -4,6 +4,13 @@ import { useAuth } from '../hooks/useAuth';
 import { authAPI } from '../apiHandler';
 import './AuthPage.css';
 
+/*
+Brief: RegisterPage component that provides a user interface for new users to create an account by entering their email, password, and confirming their password. 
+It includes form validation to ensure passwords match and meet length requirements, error handling for registration failures, and redirects authenticated users to the dashboard.
+
+@Return: JSX Element
+@ReturnT: The RegisterPage component that can be used as the registration page for the app, allowing new users to create an account and access their dashboard after successful registration.
+*/
 const RegisterPage = () => {
     const navigate = useNavigate();
     const { login } = useAuth();
@@ -14,6 +21,20 @@ const RegisterPage = () => {
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    /*
+    Source Email Regex: https://stackoverflow.com/a/46181/1233763
+    */
+    const verifyEmailFormat = (email) => 
+    {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
+    const verifyPasswordStrength = (password) =>
+    {
+        return password.length >= 8; // Simple length check, can be enhanced with more complex rules
+    }
 
     const handleChange = (e) => {
         setFormData({
@@ -27,15 +48,22 @@ const RegisterPage = () => {
         e.preventDefault();
         setError('');
 
-        // Validate passwords match
-        if (formData.password !== formData.confirmPassword) {
-            setError('Passwords do not match');
+
+        // Validate email format
+        if (!verifyEmailFormat(formData.email)) {
+            setError('Please enter a valid email address');
             return;
         }
 
-        // Validate password length
-        if (formData.password.length < 8) {
+        // Validate password strength
+        if (!verifyPasswordStrength(formData.password)) {
             setError('Password must be at least 8 characters');
+            return;
+        }
+
+        // Validate passwords match
+        if (formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match');
             return;
         }
 
@@ -45,6 +73,12 @@ const RegisterPage = () => {
             const { data } = await authAPI.register(formData.email, formData.password);
             
             if (data.success) {
+                // Set default theme if not set
+                if (!localStorage.getItem('theme')) {
+                    localStorage.setItem('theme', 'light');
+                }
+                // Apply theme to document
+                document.documentElement.setAttribute('data-theme', localStorage.getItem('theme'));
                 // Auto-login after registration
                 await login(formData.email, formData.password);
                 navigate('/dashboard');

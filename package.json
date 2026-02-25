@@ -20,7 +20,8 @@
     "ical-generator": "^8.0.0",
     "multer": "^1.4.5-lts.2",
     "mysql2": "^3.16.0",
-    "node-ical": "^0.18.0"
+    "node-ical": "^0.18.0",
+    "webfontloader": "^1.6.28"
   },
   "devDependencies": {
     "concurrently": "^8.0.0"

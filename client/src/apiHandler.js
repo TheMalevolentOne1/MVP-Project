@@ -50,4 +50,9 @@ export const settingsAPI = {
     update: (settings) => api.patch('/user/settings', settings)
 };
 
+export const timetableAPI = {
+    sync: (email, password) => 
+        api.post('/user/timetable/sync', { email, password })
+};
+
 export default api;

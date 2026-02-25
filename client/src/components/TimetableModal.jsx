@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
 import './TimetableModal.css';
 
+/*
+Brief: TimetableModal component that allows users to import their university timetable by entering their portal credentials.
+
+@Param1: isOpen (boolean) - Controls the visibility of the modal.
+@Param2: onClose (function) - Callback function to close the modal.
+@Param3: onSubmit (function) - Callback function that handles the submission of the credentials and timetable import.
+
+@Return: JSX Element
+@ReturnT: The TimetableModal component that can be used to import university timetables by providing portal credentials.
+*/
+
 const TimetableModal = ({ isOpen, onClose, onSubmit }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -9,6 +20,11 @@ const TimetableModal = ({ isOpen, onClose, onSubmit }) => {
 
     if (!isOpen) return null;
 
+    /*
+    Brief: Handles the form submission for importing the timetable. Validates input, manages loading state, and calls the onSubmit callback with the credentials.
+
+    @Param1: e (Event) - The form submission event.
+    */
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -31,7 +47,11 @@ const TimetableModal = ({ isOpen, onClose, onSubmit }) => {
         }
     };
 
-    const handleClose = () => {
+    /*
+    Brief: Handles closing the modal. Resets the form state and calls the onClose callback.
+    */
+    const handleClose = () => 
+    {
         setEmail('');
         setPassword('');
         setError('');

@@ -4,6 +4,14 @@ Congratulations on starting your productivity journey! This guide will help you 
 
 ---
 
+# Powered By
+- [React Markdown](https://github.com/remarkjs/react-markdown)
+- [React Syntax HighLighter](https://github.com/react-syntax-highlighter/react-syntax-highlighter)
+- [React GFM (GitHub Flavoured Markdown)](https://github.com/remarkjs/remark-gfm)
+- <sub>Plugin for React Markdown</sub> (HTML tags do **not** not render)
+
+---
+
 ## 🎯 Quick Start
 
 Your notes support **Markdown** — a simple way to format text that's easy to learn and powerful to use. Everything you write is automatically saved and synced.

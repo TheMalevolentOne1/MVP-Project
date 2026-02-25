@@ -146,14 +146,14 @@ const editNoteContent = async (uuid, oldTitle, newTitle, content) =>
 /*
 Brief: Delete a note for a user
 @Param1 uuid - User's UUID
-@Param2 title - Note title
+@Param2 id - Note ID
 
 @Return: JSON
 @ReturnT: Success
 @ReturnF: Failure
 */
-const deleteNote = async (uuid, title) => 
-{
+
+const deleteNote = async (uuid, title) => {
     try {
         await pool.execute(
             'DELETE FROM notes WHERE uuid = ? AND title = ?',
@@ -410,19 +410,17 @@ const getUserSettings = async (uuid) =>
             'SELECT * FROM user_settings WHERE uuid = ? LIMIT 1',
             [uuid]
         );
-        
         if (rows.length > 0) {
             return rows[0];
         }
-        
         // Return defaults if no settings exist
         return {
             theme: 'light',
             notifications_enabled: true,
-            email_notifications: true,
-            timezone: 'UTC',
             time_format: '12h',
-            date_format: 'MM/DD/YYYY'
+            date_format: 'MM/DD/YYYY',
+            font_choice: 'Default',
+            university_email: ''
         };
     } catch (err) {
         console.error('Error fetching user settings:', err);
@@ -447,61 +445,43 @@ const updateUserSettings = async (uuid, settings) =>
         );
         
         if (existing.length === 0) {
-            // Create new settings row
+            // Create new settings row with all fields
             await pool.execute(
-                `INSERT INTO user_settings (uuid, theme, notifications_enabled, email_notifications, timezone, date_format, time_format) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                `INSERT INTO user_settings (uuid, theme, notifications_enabled, email_notifications, timezone, time_format, date_format, font_choice, university_email) 
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                 [
                     uuid,
                     settings.theme || 'light',
                     settings.notifications_enabled !== undefined ? settings.notifications_enabled : true,
-                    settings.email_notifications !== undefined ? settings.email_notifications : true,
+                    settings.email_notifications !== undefined ? settings.email_notifications : false,
                     settings.timezone || 'UTC',
+                    settings.time_format || '12h',
                     settings.date_format || 'MM/DD/YYYY',
-                    settings.time_format || '12h'
+                    settings.font_choice || 'Default',
+                    settings.university_email || ''
                 ]
             );
         } else {
-            // Update existing settings
-            const updates = [];
-            const values = [];
-            
-            if (settings.theme) {
-                updates.push('theme = ?');
-                values.push(settings.theme);
-            }
-            if (settings.notifications_enabled !== undefined) {
-                updates.push('notifications_enabled = ?');
-                values.push(settings.notifications_enabled);
-            }
-            if (settings.email_notifications !== undefined) {
-                updates.push('email_notifications = ?');
-                values.push(settings.email_notifications);
-            }
-            if (settings.timezone) {
-                updates.push('timezone = ?');
-                values.push(settings.timezone);
-            }
-            if (settings.time_format) {
-                updates.push('time_format = ?');
-                values.push(settings.time_format);
-            }
-            if (settings.date_format) {
-                updates.push('date_format = ?');
-                values.push(settings.date_format);
-            }
-            
-            if (updates.length > 0) {
-                values.push(uuid);
-                await pool.execute(
-                    `UPDATE user_settings SET ${updates.join(', ')}, updated_at = CURRENT_TIMESTAMP WHERE uuid = ?`,
-                    values
-                );
-            }
+            // Update existing settings row
+            await pool.execute(
+                `UPDATE user_settings SET theme = ?, notifications_enabled = ?, email_notifications = ?, timezone = ?, time_format = ?, date_format = ?, font_choice = ?, university_email = ? WHERE uuid = ?`,
+                [
+                    settings.theme || 'light',
+                    settings.notifications_enabled !== undefined ? settings.notifications_enabled : true,
+                    settings.email_notifications !== undefined ? settings.email_notifications : false,
+                    settings.timezone || 'UTC',
+                    settings.time_format || '12h',
+                    settings.date_format || 'MM/DD/YYYY',
+                    settings.font_choice || 'Default',
+                    settings.university_email || '',
+                    uuid
+                ]
+            );
         }
-        
         return true;
-    } catch (err) {
+    } catch (err)
+    {
+        toasty.error('Failed to update settings');
         console.error('Error updating user settings:', err);
         return false;
     }

@@ -4,6 +4,12 @@ import { FiHome, FiCalendar, FiEdit3, FiSettings, FiLogOut } from 'react-icons/f
 import { useAuth } from '../hooks/useAuth';
 import './Navbar.css';
 
+/*
+Brief: Navbar component that provides navigation links to different sections of the app and a logout button.
+
+@Return: JSX Element
+@ReturnT: The Navbar component that can be used to navigate between dashboard, calendar, notes, and settings pages, and to log out of the app.
+*/
 const Navbar = () => {
     const navigate = useNavigate();
     const { logout } = useAuth();

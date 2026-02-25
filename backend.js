@@ -26,6 +26,10 @@ EVENTS (Calendar):
   POST   /user/events/import-ics → Import events from ICS file ✔️
   PATCH  /user/events/:id    → Edit event by ID ✔️
   DELETE /user/events/:id   → Delete event by ID ✔️
+  
+USER SETTINGS:
+  GET    /user/settings     → Get user settings ✔️
+  PATCH  /user/settings     → Update user settings ✔️
 
 =============================================================================
 */
@@ -107,7 +111,6 @@ Brief: Verify Authentication Endpoint is Accessible
 
 @Return: JSON
 @ReturnT: Auth endpoint is working
-@ReturnF: N/A
 */
 app.get('/auth', (req, res) => {
     res.json({ message: 'Auth endpoint is working.' });
@@ -686,9 +689,13 @@ app.delete('/user/events/:id', async (req, res) =>
 
     try {
         const result = await databaseHandler.deleteEvent(uuid, id);
-        if (result.success) {
-            return res.json({ success: true });
-        } else {
+
+        if (result.success) 
+        {
+            return res.status(200).json({ success: true });
+        } 
+        else 
+        {
             return res.status(500).json({ success: false, error: result.error });
         }
     } catch (error) {
@@ -806,8 +813,8 @@ app.post('/user/events/import-ics', icsUpload.single('file'), async (req, res) =
                 const title = cleanString(event.summary || 'Untitled Event', 255);
                 const start = event.start ? new Date(event.start) : null;
                 const end = event.end ? new Date(event.end) : start;
-                const location = sanitizeString(event.location || '', 500);
-                const description = sanitizeString(event.description || '', 2000);
+                const location = cleanString(event.location || '', 500);
+                const description = cleanString(event.description || '', 2000);
 
                 // Skip events without valid start date
                 if (!start || isNaN(start.getTime())) {
@@ -948,7 +955,7 @@ app.post('/user/timetable/sync', async (req, res) =>
         return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
 
-    const { email, password, startDate } = req.body;
+    const { email, password } = req.body;
     
     if (!email || !password) {
         return res.status(400).json({ success: false, error: 'Email and password required' });
@@ -958,6 +965,8 @@ app.post('/user/timetable/sync', async (req, res) =>
     {
         // Fetch timetable from university portal
         const result = await fetchTimetable(email, password);
+
+        if (result.error) { console.log(result.error); }
         
         if (!result.success)
             return res.status(400).json({ success: false, error: result.error || 'Failed to fetch timetable' });
