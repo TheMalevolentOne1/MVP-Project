@@ -26,6 +26,10 @@ EVENTS (Calendar):
   POST   /user/events/import-ics → Import events from ICS file ✔️
   PATCH  /user/events/:id    → Edit event by ID ✔️
   DELETE /user/events/:id   → Delete event by ID ✔️
+  
+USER SETTINGS:
+  GET    /user/settings     → Get user settings ✔️
+  PATCH  /user/settings     → Update user settings ✔️
 
 =============================================================================
 */
@@ -107,7 +111,6 @@ Brief: Verify Authentication Endpoint is Accessible
 
 @Return: JSON
 @ReturnT: Auth endpoint is working
-@ReturnF: N/A
 */
 app.get('/auth', (req, res) => {
     res.json({ message: 'Auth endpoint is working.' });
