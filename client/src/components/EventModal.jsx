@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import './EventModal.css';
+import toast from 'react-hot-toast';
 
+/*
+Brief: EventModal component that provides a form for creating or editing calendar events, with validation and user feedback.
+
+@Param1: isOpen - Boolean to control modal visibility.
+@Param2: onClose - Function to call when the modal is closed.
+@Param3: onSave - Function to call when the event is saved, receiving the event data and optional event ID for editing.
+@Param4: selectedSlot - Object containing date and hour for pre-filling the form when creating a new event from a calendar slot.
+@Param5: editingEvent - Object containing existing event data for pre-filling the form when editing an event.
+
+@Return: JSX Element
+@ReturnT: The EventModal component that can be used to create or edit calendar events, with form validation and user feedback for errors.
+@ReturnF: Returns null if the modal is not open.
+*/
 const EventModal = ({ isOpen, onClose, onSave, selectedSlot, editingEvent }) => {
     const [formData, setFormData] = useState({
         title: '',
@@ -10,6 +24,9 @@ const EventModal = ({ isOpen, onClose, onSave, selectedSlot, editingEvent }) => 
         description: ''
     });
 
+    /*
+    Brief: pre-fill the form data when editing an existing event or calendar slot selected
+    */
     useEffect(() => {
         if (editingEvent) {
             // Editing existing event
@@ -37,35 +54,57 @@ const EventModal = ({ isOpen, onClose, onSave, selectedSlot, editingEvent }) => 
         }
     }, [editingEvent, selectedSlot]);
 
+    /*
+    Brief: Handles changes to form inputs and updates the formData state accordingly.
+    
+    @Param1: e - The event object from the input change event, containing the name and value of the changed input.
+    */
     const handleChange = (e) => {
         const { name, value } = e.target;
         setFormData(prev => ({ ...prev, [name]: value }));
     };
 
+    /*
+    Brief: Handles form submission for creating or editing an event, with validation for required fields and logical date/time.
+    
+    @Param1: e - The event object from the form submission, used to prevent default form behavior.
+    */
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         if (!formData.title.trim() || !formData.start.trim()) {
-            alert('Event title and start time are required.');
+            toast.error('Event title and start time are required.');
             return;
         }
 
         const endTime = formData.end_time.trim() || formData.start.trim();
 
-        if (new Date(endTime) < new Date(formData.start)) {
-            alert('End time cannot be before start time.');
+        const startDate = new Date(formData.start);
+        const endDate = new Date(endTime);
+        
+        // Ensures event cannot be ended before its begun
+        if (endDate < startDate) 
+        {
+            toast.error('End time cannot be before start time.');
+            return;
+        }
+        
+        // Ensures that start and end times are not the same
+        if (endDate.getTime() === startDate.getTime()) 
+        {
+            toast.error('Start and end time cannot be the same.');
             return;
         }
 
-        const eventData = {
-            ...formData,
-            end_time: endTime
-        };
+        const eventData = {...formData,end_time: endTime};
 
         await onSave(eventData, editingEvent?.id);
         handleClose();
     };
 
+    /*
+    Brief: Handles closing the modal, resetting form data and state, and calling the onClose callback.
+    */
     const handleClose = () => {
         setFormData({
             title: '',

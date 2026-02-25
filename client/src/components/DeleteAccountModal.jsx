@@ -1,8 +1,20 @@
 import React, { useState } from 'react';
 import './DeleteAccountModal.css';
 
+/*
+Brief: DeleteAccountModal component that provides a two-step confirmation process for users who want to delete their account.
+
+@Param1: isOpen - Boolean to control modal visibility.
+@Param2: onConfirm - Function to call when the user confirms the account deletion.
+@Param3: onCancel - Function to call when the user cancels the account deletion process.
+@Param4: userEmail - The email address of the user, used for confirmation.
+
+@Return: JSX Element
+@ReturnT: The DeleteAccountModal component that can be used to safely confirm account deletion with users, ensuring they understand the consequences of their action.
+@ReturnF: Returns null if the modal is not open.
+*/
 const DeleteAccountModal = ({ isOpen, onConfirm, onCancel, userEmail }) => {
-    const [step, setStep] = useState(1);
+    const [step, setStep] = useState(1); // Step 1: Email confirmation, Step 2: Final warning
     const [emailInput, setEmailInput] = useState('');
     const [error, setError] = useState('');
 
@@ -15,7 +27,7 @@ const DeleteAccountModal = ({ isOpen, onConfirm, onCancel, userEmail }) => {
         onCancel();
     };
 
-    const handleOverlayClick = (e) => {
+    const handleClick = (e) => {
         if (e.target === e.currentTarget) {
             handleClose();
         }
@@ -30,7 +42,7 @@ const DeleteAccountModal = ({ isOpen, onConfirm, onCancel, userEmail }) => {
         }
         
         setError('');
-        setStep(2);
+        setStep(2); // Move to the final confirmation step
     };
 
     const handleFinalConfirm = () => {
@@ -39,7 +51,7 @@ const DeleteAccountModal = ({ isOpen, onConfirm, onCancel, userEmail }) => {
     };
 
     return (
-        <div className="delete-account-modal-overlay" onClick={handleOverlayClick}>
+        <div className="delete-account-modal-overlay" onClick={handleClick}>
             <div className="delete-account-modal">
                 {step === 1 ? (
                     <>
@@ -68,8 +80,7 @@ const DeleteAccountModal = ({ isOpen, onConfirm, onCancel, userEmail }) => {
                                 </button>
                             </div>
                         </form>
-                    </>
-                ) : (
+                    </>) : (
                     <>
                         <div className="modal-icon danger">🚨</div>
                         <h2>Final Warning</h2>
@@ -91,8 +102,8 @@ const DeleteAccountModal = ({ isOpen, onConfirm, onCancel, userEmail }) => {
                                 Yes, Delete Forever
                             </button>
                         </div>
-                    </>
-                )}
+                    </>)
+                });
             </div>
         </div>
     );

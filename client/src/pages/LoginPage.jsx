@@ -3,15 +3,29 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import './AuthPage.css';
 
+/*
+Brief: LoginPage component that provides a user interface for users to enter their email and password to log in to the application. 
+It includes form validation, error handling, and redirects authenticated users to the dashboard.
+
+@Return: JSX Element
+@ReturnT: The LoginPage component that can be used as the login page for the app, allowing users to authenticate and access their dashboard.
+*/
 const LoginPage = () => {
     const navigate = useNavigate();
     const { login, user } = useAuth();
 
+    /*
+    Brief: Redirect to dashboard if user is already authenticated.
+    */
     useEffect(() => {
         if (user) {
             navigate('/dashboard');
         }
     }, [user, navigate]);
+
+    /*
+    Brief: State management for form data
+    */
     const [formData, setFormData] = useState({
         email: '',
         password: ''
@@ -19,6 +33,14 @@ const LoginPage = () => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    /*
+    Brief: Handle input changes and update form data state. Also resets error state on input change.
+
+    @Param1: e - The event object from the input change event.
+
+    @Return: Object
+    @ReturnT: Updated formData state with the new input value, and error state reset to an empty string.
+    */
     const handleChange = (e) => {
         setFormData({
             ...formData,
@@ -27,6 +49,11 @@ const LoginPage = () => {
         setError('');
     };
 
+    /*
+    Brief: Handle form submission for login. It validates the input, calls the login function from the auth context, and handles success or error states.
+
+    @Param1: e - The event object from the form submission.
+    */
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');

@@ -28,7 +28,7 @@ const AppHeader = ({ title }) =>
 
             <div className="user-profile">
                 <span className="user-email">{user?.email || 'User'}</span>
-                <div className="profile-icon">{user?.email?.[0]?.toUpperCase() || 'U'}</div>
+                <div className="profile-icon">{user?.email?.[0].toUpperCase() || 'U'}</div>
             </div>
         </header>
     );

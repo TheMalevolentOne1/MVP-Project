@@ -1,31 +1,58 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../hooks/useTheme';
 import { useNavigate } from 'react-router-dom';
-import toast from 'react-hot-toast';import { FiEdit3, FiCalendar, FiTrash2 } from 'react-icons/fi';import { notesAPI, eventsAPI } from '../apiHandler';
+import { showToast } from '../showToast';
+import { FiEdit3, FiCalendar, FiTrash2 } from 'react-icons/fi';
+import { notesAPI, eventsAPI } from '../apiHandler';
 import AppHeader from '../components/AppHeader';
 import Navbar from '../components/Navbar';
 import DashboardModal from '../components/DashboardModal';
 import ConfirmModal from '../components/ConfirmModal';
-import { useTheme } from '../hooks/useTheme';
+
 import { useAuth } from '../hooks/useAuth';
 import './Dashboard.css';
 
+/*
+Brief: Dashboard component displaying recent notes and upcoming events with quick action buttons.
+
+@Returns: JSX.Element
+@ReturnT: Renders the dashboard with sidebars for notes/events and main overview area.
+*/
 const Dashboard = () => {
     const navigate = useNavigate();
     const [recentNotes, setRecentNotes] = useState([]);
     const [upcomingEvents, setUpcomingEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
+    
+    // Ensure theme is applied on mount
+    useTheme();
+
     const [modalType, setModalType] = useState('note');
     const [deleteConfirm, setDeleteConfirm] = useState({ isOpen: false, eventId: null });
-    const { theme, setTheme } = useTheme();
     const { user } = useAuth();
 
-    useEffect(() => {if (!user) { navigate('/login'); } }, [user, navigate]);
+    /*
+    Brief: Redirect to login if user is not authenticated.
+    */
+    useEffect(() => {
+        if (!user) { 
+            navigate('/login'); 
+        } 
+    }, [user, navigate]);
 
+    /*
+    Brief: Load dashboard data on component mount.
+    */
     useEffect(() => {
         loadDashboardData();
     }, []);
 
+    /*
+    Brief: Fetch recent notes and upcoming events from the API.
+
+    @ReturnT: Data is loaded and state is updated.
+    */
     const loadDashboardData = async () => {
         try {
             const [notesRes, eventsRes] = await Promise.all([
@@ -46,27 +73,48 @@ const Dashboard = () => {
         }
     };
 
+    /*
+    Brief: Navigate to notes page with the selected note loaded.
+    
+    @Param1: noteTitle - The title of the note to load.
+    */
     const handleNoteClick = (noteTitle) => {
         navigate(`/notes?note=${encodeURIComponent(noteTitle)}`);
     };
 
+    /*
+    Brief: Show confirmation dialog for deleting an event.
+    
+    @Param1: eventId - The ID of the event to delete.
+    */
     const handleEventDelete = (eventId) => {
         setDeleteConfirm({ isOpen: true, eventId });
     };
 
+    /*
+    Brief: Confirm and execute event deletion.
+
+    @ReturnT: Event is deleted and dashboard data is refreshed.
+    @ReturnF: Error toast is shown if deletion fails.
+    */
     const confirmEventDelete = async () => {
         try {
             await eventsAPI.delete(deleteConfirm.eventId);
             loadDashboardData();
-            toast.success('Event deleted');
+            showToast('Event deleted', 'success');
         } catch (error) {
             console.error('Failed to delete event:', error);
-            toast.error('Failed to delete event');
+            showToast('Failed to delete event', 'error');
         } finally {
             setDeleteConfirm({ isOpen: false, eventId: null });
         }
     };
 
+    /*
+    Brief: Open modal for creating notes or events.
+    
+    @Param1: type - The type of modal to open: 'note' or 'event'.
+    */
     const openModal = (type) => {
         setModalType(type);
         setModalOpen(true);

@@ -115,7 +115,7 @@
 
 .calendar-grid {
     display: grid;
-    grid-template-columns: 80px repeat(7, 1fr);
+    grid-template-columns: 80px repeat(7, 1fr); /* 1 column for time labels + 7 for days of the week */
     min-width: 900px;
 }
 
@@ -142,7 +142,7 @@
 }
 
 .grid-slot {
-    min-height: 60px;
+    height: 60px;
     border: 1px solid #bdc3c7;
     cursor: pointer;
     transition: background-color 0.2s;
@@ -220,8 +220,7 @@
     flex-shrink: 0;
 }
 
-.edit-event-btn,
-.delete-event-btn {
+.edit-event-btn, .delete-event-btn {
     background-color: rgba(255, 255, 255, 0.2);
     border: none;
     color: white;

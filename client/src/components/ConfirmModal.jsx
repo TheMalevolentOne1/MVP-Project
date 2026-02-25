@@ -2,7 +2,7 @@ import React from 'react';
 import './ConfirmModal.css';
 
 /*
-Brief: A reusable confirmation modal component that can be used for confirming actions like deletions.
+Brief: Reusable confirmation modal component that can be used for confirming actions like deletions.
 
 @Param1: isOpen - Boolean to control modal visibility.
 @Param2: onConfirm - Function to call when the user confirms the action.
