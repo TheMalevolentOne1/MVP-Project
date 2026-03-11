@@ -223,7 +223,7 @@ Brief: Register Endpoint - Creates New User and Session
 @ReturnF: Error message
 */
 app.post('/auth/register', async (req, res) => {
-    if (!req.body.length === 0) {
+    if (req.body.length === 0) {
         return res.status(400).json({ success: false, error: 'Request body is empty' });
     }
 
@@ -244,10 +244,11 @@ app.post('/auth/register', async (req, res) => {
     }
 
     try {
-        var { verify } = await databaseHandler.verifyUserEmail(email);
+        var { user } = await databaseHandler.verifyUserEmail(email);
 
-        if (verify) { 
-            return res.status(409).json({ success: false, error: 'Email already registered' }); 
+        if (user) 
+        {
+            return res.status(409).json({ success: false, error: 'Email already registered' });
         }
 
         // Hash password and create user
